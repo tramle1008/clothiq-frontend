@@ -8,10 +8,10 @@ import { cartReducer } from './cartReducer';
 import { orderReducer } from './orderReducer';
 import { adminOrderReducer } from './adminOrderReducer';
 import orderUserReducer from './orderUserReducer';
+import { getStoredAuth } from '../../utils/auth';
 
 
-const user = localStorage.getItem("auth")
-    ? JSON.parse(localStorage.getItem("auth")) : [];
+const user = getStoredAuth() || [];
 
 
 const initialState = {

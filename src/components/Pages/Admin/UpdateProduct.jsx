@@ -26,7 +26,7 @@ const UpdateProduct = () => {
 
 
     useEffect(() => {
-        dispatch(fetchCategories());
+        dispatch(fetchCategories("pageNumber=0&pageSize=1000"));
 
         const fetchProduct = async () => {
             try {

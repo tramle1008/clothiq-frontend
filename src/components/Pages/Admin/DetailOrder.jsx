@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import AdminSidebar from "./AdminSidebar";
 import StatCard from "./StatCard";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import ReusableFilter from "../../ReusableFilter";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
 
 const DetailOrder = () => {
     const [orders, setOrders] = useState([]);
@@ -17,7 +17,7 @@ const DetailOrder = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const token = JSON.parse(localStorage.getItem("auth"))?.jwtToken;
+                const token = getAuthToken();
 
                 const status = searchParams.get("status");  // filter
                 const sortOrder = searchParams.get("sortOrder") || "asc"; // sort

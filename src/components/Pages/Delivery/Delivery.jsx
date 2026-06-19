@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import PaginationRounded from "../../PaginationRounded";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
 
 const Delivery = () => {
     const [orders, setOrders] = useState([]);
@@ -16,10 +16,9 @@ const Delivery = () => {
     const sortBy = "orderedDate";
     const sortOrder = "asc";
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         try {
-            const auth = JSON.parse(localStorage.getItem("auth"));
-            const token = auth?.jwtToken;
+            const token = getAuthToken();
 
             if (!token) {
                 setError("Bạn chưa đăng nhập hoặc không có quyền.");
@@ -49,11 +48,11 @@ const Delivery = () => {
             }
             setOrders([]);
         }
-    };
+    }, [currentPage]);
 
     useEffect(() => {
         fetchOrders();
-    }, [currentPage]);
+    }, [fetchOrders]);
 
     return (
         <div className="p-6">

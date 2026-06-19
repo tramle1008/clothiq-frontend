@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 import HandleShip from "../Order_Admin/HandleShip";
 import { useSearchParams, Link } from "react-router-dom";
 import PaginationRounded from "../../PaginationRounded";
@@ -7,6 +6,7 @@ import AdminSidebar from "./AdminSidebar";
 import StatCard from "./StatCard";
 import HandleReject from "../Order_Admin/HandleReject";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
 
 const HandleOrder = () => {
     const [orders, setOrders] = useState([]);
@@ -18,10 +18,10 @@ const HandleOrder = () => {
     const page = parseInt(searchParams.get("page")) || 1;
     const pageSize = 5;
 
-    const fetchPendingOrders = async () => {
+    const fetchPendingOrders = useCallback(async () => {
         setLoading(true);
         try {
-            const token = JSON.parse(localStorage.getItem("auth"))?.jwtToken;
+            const token = getAuthToken();
 
             const response = await api.get("/admin/pending", {
                 params: {
@@ -43,11 +43,11 @@ const HandleOrder = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page]);
 
     useEffect(() => {
         fetchPendingOrders();
-    }, [page]);
+    }, [fetchPendingOrders]);
 
     if (loading) return <p className="text-center mt-4">Đang tải dữ liệu...</p>;
     if (error) return <p className="text-red-500 text-center mt-4">{error}</p>;

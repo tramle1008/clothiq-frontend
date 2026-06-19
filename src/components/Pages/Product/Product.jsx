@@ -14,7 +14,7 @@ const Product = () => {
     const { products, pagination } = useSelector((state) => state.products);
     const categories = useSelector((state) => state.products.categories) || [];
     useEffect(() => {
-        dispatch(fetchCategories());
+        dispatch(fetchCategories("pageNumber=0&pageSize=1000"));
     }, [dispatch]);
 
     const categoryFilterList = categories

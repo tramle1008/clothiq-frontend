@@ -35,7 +35,7 @@ const OAuth2RedirectHandler = () => {
                     },
                 });
 
-                const auth = buildAuthSession(token, response.data);
+                const auth = buildAuthSession(token, null, response.data);
                 persistAuthSession(auth);
                 dispatch({ type: "LOGIN_SUCCESS", payload: auth });
 

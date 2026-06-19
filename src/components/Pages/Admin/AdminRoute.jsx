@@ -1,8 +1,9 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { getStoredAuth } from "../../../utils/auth";
 
 const AdminRoute = ({ children }) => {
-    const auth = JSON.parse(localStorage.getItem("auth"));
+    const auth = getStoredAuth();
     const roles = auth?.role || [];
 
     const isAdmin = roles.includes("ROLE_ADMIN");

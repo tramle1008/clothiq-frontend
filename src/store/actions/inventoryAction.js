@@ -14,6 +14,15 @@ const buildProductPayload = (data) => ({
     lastPage: data.lastPage,
 });
 
+const buildCategoryPayload = (data) => ({
+    categories: data.content,
+    pageNumber: data.pageNumber,
+    pageSize: data.pageSize,
+    totalElements: data.totalElements,
+    totalPages: data.totalPages,
+    lastPage: data.lastPage,
+});
+
 export const fetchProduct = (queryString = "") => async (dispatch) => {
     try {
         const data = await getProductsApi(queryString);
@@ -53,13 +62,13 @@ export const searchProducts = (queryString = "") => async (dispatch) => {
     }
 };
 
-export const fetchCategories = () => async (dispatch) => {
+export const fetchCategories = (queryString = "pageNumber=0&pageSize=10") => async (dispatch) => {
     try {
-        const data = await getCategoriesApi();
+        const data = await getCategoriesApi(queryString);
 
         dispatch({
             type: "FETCH_CATEGORIES",
-            payload: data.content,
+            payload: buildCategoryPayload(data),
         });
     } catch (error) {
         console.error("Loi khi fetch category:", error);

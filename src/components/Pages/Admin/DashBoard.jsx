@@ -460,8 +460,8 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <h1 className="my-5 text-center text-2xl font-semibold text-slate-800">Sản phẩm sắp hết hàng</h1>
-            <div className="rounded bg-white shadow">
+            {/* <h1 className="my-5 text-center text-2xl font-semibold text-slate-800">Sản phẩm sắp hết hàng</h1> */}
+            {/* <div className="rounded bg-white shadow">
                 <table className="mr-18 min-w-full table-auto border-collapse border border-slate-300">
                     <thead className="bg-slate-100">
                         <tr>
@@ -506,7 +506,7 @@ const Dashboard = () => {
                         )}
                     </tbody>
                 </table>
-            </div>
+            </div> */}
         </div>
     );
 };

@@ -21,7 +21,7 @@ const Filter = () => {
 
     // Fetch categories
     useEffect(() => {
-        dispatch(fetchCategories());
+        dispatch(fetchCategories("pageNumber=0&pageSize=1000"));
     }, [dispatch]);
 
     // Read params from URL

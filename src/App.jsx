@@ -22,13 +22,13 @@ import HandleOrder from "./components/Pages/Admin/HandleOrder";
 import OrderShipped from "./components/Pages/Admin/DetailOrder";
 import AdminProductList from "./components/Pages/Admin/AdminProductList";
 import DetailOrder from "./components/Pages/Admin/DetailOrder";
-import AddProductForm from "./components/Pages/Admin/AddProductForm";
 import DeliverRoute from "./components/Pages/Delivery/DeliverRoute";
 import Delivery from "./components/Pages/Delivery/Delivery";
 import UpdateProduct from "./components/Pages/Admin/UpdateProduct";
 import WebFooter from "./components/Pages/WebFooter";
 import About from "./components/Pages/About/About";
 import AdminAbout from "./components/Pages/Admin/AdminAbout";
+import Categories from "./components/Pages/Admin/Categories";
 
 function AppContent() {
     const location = useLocation();
@@ -58,10 +58,10 @@ function AppContent() {
                 <Route path="/admin/orders/ships" element={<OrderShipped />} />
                 <Route path="/admin/products" element={<AdminProductList />} />
                 <Route path="/admin/detail" element={<DetailOrder />} />
-                <Route path="/admin/product/addproduct" element={<AddProductForm />} />
                 <Route path="/deliver" element={<DeliverRoute><Delivery /></DeliverRoute>} />
                 <Route path="/admin/product/update/:productId" element={<UpdateProduct />} />
                 <Route path="/admin/about" element={<AdminRoute><AdminAbout /></AdminRoute>} />
+                <Route path="/admin/products/categories" element={<AdminRoute><Categories /></AdminRoute>} />
             </Routes>
             {!isAdminPage && <WebFooter />}
         </>

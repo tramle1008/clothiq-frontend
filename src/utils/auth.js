@@ -1,13 +1,57 @@
+const normalizeRoles = (...sources) => {
+    for (const source of sources) {
+        if (Array.isArray(source)) {
+            return source.filter(Boolean);
+        }
+
+        if (typeof source === "string" && source.trim()) {
+            return [source.trim()];
+        }
+    }
+
+    return [];
+};
+
+const normalizeAuthSession = (auth) => {
+    if (!auth || typeof auth !== "object") {
+        return null;
+    }
+
+    const accessToken =
+        auth.accessToken ||
+        auth.accesstoken ||
+        auth.access_token ||
+        auth.jwtToken ||
+        auth.token ||
+        null;
+    const refreshToken =
+        auth.refreshToken ||
+        auth.refreshtoken ||
+        auth.refresh_token ||
+        auth.refeshToken ||
+        null;
+    const role = normalizeRoles(auth.role, auth.roles);
+
+    return {
+        ...auth,
+        accessToken,
+        refreshToken,
+        role,
+    };
+};
+
 export const getStoredAuth = () => {
     try {
         const auth = localStorage.getItem("auth");
-        return auth ? JSON.parse(auth) : null;
-    } catch (error) {
+        return auth ? normalizeAuthSession(JSON.parse(auth)) : null;
+    } catch {
         return null;
     }
 };
 
-export const getAuthToken = () => getStoredAuth()?.jwtToken || null;
+export const getAuthToken = () => getStoredAuth()?.accessToken || null;
+
+export const getRefreshToken = () => getStoredAuth()?.refreshToken || null;
 
 const decodeBase64Url = (value) => {
     const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -29,23 +73,25 @@ export const decodeJwtPayload = (token) => {
         }
 
         return JSON.parse(decodeBase64Url(payload));
-    } catch (error) {
+    } catch {
         return null;
     }
 };
 
-export const buildAuthSession = (token, profile = {}) => {
-    const payload = decodeJwtPayload(token) || {};
-    const role = Array.isArray(profile.role)
-        ? profile.role
-        : Array.isArray(payload.role)
-            ? payload.role
-            : Array.isArray(payload.roles)
-                ? payload.roles
-                : [];
+export const buildAuthSession = (accessToken, refreshToken = null, profile = {}) => {
+    const payload = decodeJwtPayload(accessToken) || {};
+    const role = normalizeRoles(
+        profile.role,
+        profile.roles,
+        payload.role,
+        payload.roles,
+        payload.authorities,
+        payload.scope
+    );
 
     return {
-        jwtToken: token,
+        accessToken,
+        refreshToken: refreshToken || null,
         id: profile.id ?? payload.id ?? payload.userId ?? null,
         userName: profile.userName ?? payload.userName ?? payload.sub ?? "",
         email: profile.email ?? payload.email ?? "",
@@ -54,5 +100,9 @@ export const buildAuthSession = (token, profile = {}) => {
 };
 
 export const persistAuthSession = (auth) => {
-    localStorage.setItem("auth", JSON.stringify(auth));
+    localStorage.setItem("auth", JSON.stringify(normalizeAuthSession(auth)));
+};
+
+export const clearAuthSession = () => {
+    localStorage.removeItem("auth");
 };

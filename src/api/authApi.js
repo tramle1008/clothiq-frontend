@@ -14,6 +14,20 @@ export const loginApi = async ({ username, password }) => {
     return response.data;
 };
 
+export const refreshTokenApi = async (refreshToken) => {
+    const response = await api.post(
+        "/auth/refresh",
+        { refreshToken },
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    return response.data;
+};
+
 export const registerApi = async ({ username, email, password, role = null }) => {
     const response = await api.post(
         "/auth/signup",

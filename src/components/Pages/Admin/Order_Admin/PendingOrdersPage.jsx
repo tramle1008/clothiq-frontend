@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Chip, TextField, Typography } from "@mui/material";
 import { FiEye, FiSearch } from "react-icons/fi";
@@ -54,7 +54,7 @@ const PendingOrdersPage = () => {
         setDraftKeyword(keyword);
     }, [keyword]);
 
-    const fetchPendingOrders = async () => {
+    const fetchPendingOrders = useCallback(async () => {
         try {
             setLoading(true);
             setError("");
@@ -83,11 +83,11 @@ const PendingOrdersPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword, fromDate, toDate]);
 
     useEffect(() => {
         fetchPendingOrders();
-    }, [page, keyword, fromDate, toDate]);
+    }, [fetchPendingOrders]);
 
     const updateParams = (updater) => {
         const nextParams = new URLSearchParams(searchParams);

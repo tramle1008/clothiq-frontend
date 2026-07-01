@@ -26,7 +26,7 @@ const SetQuantity = ({ productId, quantity, onUpdate, onQuantityChange }) => {
                 if (isMounted) {
                     setMaxStock(Number(response.data?.quantity ?? 0));
                 }
-            } catch (error) {
+            } catch {
                 if (isMounted) {
                     setMaxStock(null);
                 }
@@ -46,20 +46,20 @@ const SetQuantity = ({ productId, quantity, onUpdate, onQuantityChange }) => {
         const token = getAuthToken();
 
         if (!token) {
-            toast.error("Ban can dang nhap!");
+            toast.error("Bạn cần đăng nhập!");
             return;
         }
 
         const parsedQty = Number(rawValue);
 
         if (!Number.isInteger(parsedQty) || parsedQty <= 0) {
-            toast.error("So luong phai la so nguyen lon hon 0.");
+            toast.error("Số lượng phải là số nguyên lớn hơn 0.");
             setInputQty(String(currentQty));
             return;
         }
 
         if (maxStock !== null && parsedQty > maxStock) {
-            toast.error(`So luong khong duoc vuot qua ton kho hien co (${maxStock}).`);
+            toast.error(`Số lượng không được vượt quá tồn kho hiện có (${maxStock}).`);
             setInputQty(String(currentQty));
             return;
         }
@@ -73,12 +73,12 @@ const SetQuantity = ({ productId, quantity, onUpdate, onQuantityChange }) => {
             setInputQty(String(updatedQty));
             onQuantityChange?.(updatedQty);
             onUpdate?.();
-            toast.success("Da cap nhat so luong san pham.");
+            toast.success("Đã cập nhật số lượng sản phẩm.");
         } catch (error) {
             const message =
                 error?.response?.data?.message ||
                 error?.response?.data ||
-                "Khong the cap nhat so luong!";
+                "Không thể cập nhật số lượng!";
             toast.error(String(message));
             setInputQty(String(currentQty));
         } finally {
@@ -89,7 +89,7 @@ const SetQuantity = ({ productId, quantity, onUpdate, onQuantityChange }) => {
     const handleQtyIncrease = () => {
         const nextQty = currentQty + 1;
         if (maxStock !== null && nextQty > maxStock) {
-            toast.error(`So luong khong duoc vuot qua ton kho hien co (${maxStock}).`);
+            toast.error(`Số lượng không được vượt quá tồn kho hiện có (${maxStock}).`);
             return;
         }
 
@@ -100,7 +100,7 @@ const SetQuantity = ({ productId, quantity, onUpdate, onQuantityChange }) => {
     const handleQtyDecrease = () => {
         const nextQty = currentQty - 1;
         if (nextQty <= 0) {
-            toast.error("So luong phai lon hon 0.");
+            toast.error("Số lượng phải lớn hơn 0.");
             return;
         }
 

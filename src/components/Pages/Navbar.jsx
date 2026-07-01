@@ -18,7 +18,7 @@ const Navbar = () => {
         if (user && user.id) {
             dispatch(fetchCart());
         }
-    }, [dispatch]);
+    }, [dispatch, user]);
     return (
 
         <div className="h-[70px] bg-[#d9a05b] text-white z-50  flex items-center sticky top-0">

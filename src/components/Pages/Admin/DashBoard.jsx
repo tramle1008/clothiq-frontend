@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import {
     CartesianGrid,
     Line,
@@ -12,7 +11,6 @@ import {
 } from "recharts";
 
 import { getRevenueChart, getStats } from "../../../api/orderApi";
-import { fetchAllProduct } from "../../../store/actions";
 
 const RANGE_OPTIONS = [
     { key: "7d", label: "1 tuần", groupBy: "day" },
@@ -179,16 +177,12 @@ const Dashboard = () => {
     const [chartLoading, setChartLoading] = useState(false);
     const [chartFilters, setChartFilters] = useState(() => buildPresetParams("1y"));
     const [draftFilters, setDraftFilters] = useState(() => buildPresetParams("1y"));
-    const { products } = useSelector((state) => state.products);
-    const dispatch = useDispatch();
 
     useEffect(() => {
         getStats()
             .then((data) => setStats(data))
             .catch((error) => console.error("Loi lay thong ke:", error));
-
-        dispatch(fetchAllProduct());
-    }, [dispatch]);
+    }, []);
 
     useEffect(() => {
         setChartLoading(true);
@@ -198,11 +192,6 @@ const Dashboard = () => {
             .catch((error) => console.error("Loi lay chart doanh thu:", error))
             .finally(() => setChartLoading(false));
     }, [chartFilters]);
-
-    const lowStockProducts = useMemo(
-        () => products?.filter((product) => product.quantity < 5) || [],
-        [products]
-    );
 
     const chartPoints = useMemo(
         () => normalizeChartPoints(chartData, chartFilters),

@@ -1,17 +1,13 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Button } from '@headlessui/react';
 
-function ProductView({ open, setOpen, product, isAvailable }) {
+function ProductView({ open, setOpen, product }) {
     if (!product) return null;
 
     const {
-        productId,
         productName,
         image,
         description,
         quantity,
-        price,
-        discount,
-        specialPrice
     } = product;
 
     const close = () => setOpen(false);

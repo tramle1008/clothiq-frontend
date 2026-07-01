@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 import { useEffect, useState } from "react";
@@ -8,9 +8,6 @@ import { fetchCategories } from "../store/actions";
 
 const Filter = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const location = useLocation();
-
     const [searchParams, setSearchParams] = useSearchParams();
 
     const categories = useSelector((state) => state.products.categories);

@@ -130,7 +130,7 @@ const ProductUpdateDrawer = ({ open, productId, onClose, onSuccess }) => {
                 setSelectedCategoryId(String(product.categoryId || ""));
                 setImageFile(null);
                 setImagePreviewUrl(product.image || "");
-            } catch (error) {
+            } catch {
                 toast.error("Không thể lấy thông tin sản phẩm. Vui lòng thử lại sau.");
                 onClose?.();
             } finally {

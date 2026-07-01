@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
@@ -45,7 +45,7 @@ const AdminProductList = () => {
         dispatch(fetchCategories("pageNumber=0&pageSize=1000"));
     }, [dispatch]);
 
-    const loadProducts = () => {
+    const loadProducts = useCallback(() => {
         const pageIndex = page - 1;
         const params = new URLSearchParams({
             pageNumber: pageIndex.toString(),
@@ -63,11 +63,11 @@ const AdminProductList = () => {
         }
 
         dispatch(fetchProduct(params.toString()));
-    };
+    }, [dispatch, page, pageSize, searchKey, categoryId]);
 
     useEffect(() => {
         loadProducts();
-    }, [dispatch, page, pageSize, searchKey, categoryId]);
+    }, [loadProducts]);
 
     const handleSearch = () => {
         const nextParams = new URLSearchParams(searchParams);

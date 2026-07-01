@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button } from '@mui/material';
 
-const Complete = ({ onReset }) => {
+const Complete = () => {
     const navigate = useNavigate();
     return (
         <div className='my-10'>

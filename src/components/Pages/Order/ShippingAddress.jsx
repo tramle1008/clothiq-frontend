@@ -1,6 +1,5 @@
 import { Button } from "@headlessui/react";
-import { Box, Typography } from "@mui/material";
-import axios from "axios";
+import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAddresses } from "../../../store/actions";

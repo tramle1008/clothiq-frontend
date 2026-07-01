@@ -10,7 +10,7 @@ export const fetchCart = () => async (dispatch) => {
             type: "CART_SUCCESS",
             payload: data,
         });
-    } catch (error) {
+    } catch {
         dispatch({
             type: "CART_FAILURE",
             payload: "Khong thay duoc gio hang cua nguoi dung",

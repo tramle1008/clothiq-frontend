@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
-import ItemContent from "../Cart/ItemContent";
 import api from "../../../api/api";
 import { getAuthToken } from "../../../utils/auth";
 
@@ -27,20 +25,18 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
     const { products } = useSelector((state) => state.cart);
     const totalPrice = getCalculatedTotalPrice(products);
     const token = getAuthToken();
-    if (!token) {
-        toast.error("Bạn cần đăng nhập");
-        return null;
-    }
-
 
     const handlePlaceOrder = async () => {
+        if (!token) {
+            toast.error("Bạn cần đăng nhập");
+            return;
+        }
+
         if (paymentMethod === "COD") {
             try {
-                const res = await api.post(
+                await api.post(
                     "/payments/COD",
-                    {
-                        addressId
-                    },
+                    { addressId },
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }
@@ -51,72 +47,76 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                 console.error(err);
             }
 
-        } else if (paymentMethod === "QR") {
+            return;
+        }
+
+        if (paymentMethod === "QR") {
             try {
-                const res = await api.post(
+                const response = await api.post(
                     "/payments/qr",
                     { addressId },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
-                setQrUrl(res.data.qrUrl);
-                setOrderCode(res.data.orderCode);
-                setCheckingStatus(true); //  Kích hoạt useEffect kiểm tra
-
+                setQrUrl(response.data.qrUrl);
+                setOrderCode(response.data.orderCode);
+                setCheckingStatus(true);
             } catch (err) {
-                console.error("Lỗi tạo QR:", err);
+                console.error(" lỗi tạo QR:", err);
                 toast.error("Không thể tạo QR thanh toán");
             }
         }
     };
 
-    const checkPaymentStatus = async () => {
-        if (!orderCode) return;
+    const checkPaymentStatus = useCallback(async () => {
+        if (!orderCode || !token) {
+            return;
+        }
 
         try {
-            const res = await api.get(
-                `/orders/status/${orderCode}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+            const response = await api.get(`/orders/status/${orderCode}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-            if (res.data === "PAID") {
-                toast.success("Đã xác nhận thanh toán thành công!");
+            if (response.data === "PAID") {
+                toast.success("Đã xác nhận thanh toán thành công");
                 setCheckingStatus(false);
                 onNext();
-            } else {
-                console.log("Chưa thanh toán...");
             }
         } catch (err) {
-            console.error("Lỗi kiểm tra trạng thái:", err);
+            console.error(" lỗi kiểm tra trạng thái:", err);
         }
-    };
+    }, [orderCode, onNext, token]);
 
     useEffect(() => {
-        if (!orderCode || checkingStatus === false) return;
+        if (!orderCode || !checkingStatus) {
+            return undefined;
+        }
 
         const interval = setInterval(() => {
             checkPaymentStatus();
         }, 7000);
 
-        // Dừng sau 5 phút
         const timeout = setTimeout(() => {
             toast.error("Hết thời gian chờ thanh toán. Vui lòng thử lại.");
             setCheckingStatus(false);
-        }, 300000); // 5 phút = 300.000 ms
+        }, 300000);
 
         return () => {
             clearInterval(interval);
             clearTimeout(timeout);
         };
-    }, [orderCode, checkingStatus]);
+    }, [orderCode, checkingStatus, checkPaymentStatus]);
+
+    if (!token) {
+        return null;
+    }
 
     return (
-        <div className=" flex justify-center text-center">
+        <div className="flex justify-center text-center">
             <Box>
                 {!qrUrl && (
                     <>
-                        <Typography variant="h6" gutterBottom>Đơn Hàng</Typography>
+                        <Typography variant="h6" gutterBottom>Don Hang</Typography>
                         <div className="grid grid-cols-4 bg-[#7f9c8f] p-1.5 mb-0.5">
                             <p>Hình ảnh</p>
                             <p>Tên</p>
@@ -124,11 +124,11 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                             <p>Số lượng</p>
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            {products.map(item => (
+                            {products.map((item) => (
                                 <div key={item.productId} className="grid grid-cols-1 gap-4">
                                     <div className="grid grid-cols-4 items-center">
                                         <img
-                                            src={`http://localhost:8080/images/${item.image}`}
+                                            src={`${import.meta.env.VITE_BACK_END_URL}/images/${item.image}`}
                                             alt={item.productName}
                                             className="w-28 h-28 object-cover rounded-md"
                                         />
@@ -136,7 +136,7 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                                             <h4 className="font-semibold">{item.productName}</h4>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">{getDiscountedUnitPrice(item).toLocaleString()}đ</h4>
+                                            <h4 className="font-semibold">{getDiscountedUnitPrice(item).toLocaleString()}d</h4>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold">{item.quantity?.toLocaleString()}</h4>
@@ -145,7 +145,7 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                                 </div>
                             ))}
                             <div className="text-xl font-semibold">
-                                Tổng cộng: <span className="text-red-500">{Number(totalPrice).toLocaleString()} VNĐ</span>
+                                Tổng cộng: <span className="text-red-500">{Number(totalPrice).toLocaleString()} VND</span>
                             </div>
                         </div>
                     </>
@@ -169,7 +169,6 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                                 Xác nhận đơn hàng
                             </button>
                         </div>
-
                     </div>
                 )}
 
@@ -177,7 +176,7 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                     <div className="mt-6 mb-10">
                         {!qrUrl ? (
                             <div className="flex flex-col items-center gap-4">
-                                <Typography>Nhấn để tạo mã QR thanh toán:</Typography>
+                                <Typography>Nhận để tạo mã QR thanh toán:</Typography>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <button
                                         onClick={onBack}
@@ -188,25 +187,22 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                                     <Button variant="outlined" onClick={handlePlaceOrder}>
                                         Tạo QR
                                     </Button>
-
                                 </div>
                             </div>
-
                         ) : (
-                            <div >
-                                <Typography variant="h6">Quét mã QR bằng App ngân hàng:</Typography>
+                            <div>
+                                <Typography variant="h6">Quét mã QR bằng app ngân hàng:</Typography>
                                 <div className="flex">
-                                    <img src={qrUrl} alt="QR thanh toán" className="mt-3 w-64 mx-auto" />
+                                    <img src={qrUrl} alt="QR thanh toan" className="mt-3 w-64 mx-auto" />
 
                                     <div className="text-left w-fit mx-auto mt-4">
                                         <p><strong>Ngân hàng:</strong> VietinBank</p>
                                         <p><strong>Chủ tài khoản:</strong> LE BICH TRAM</p>
                                         <p><strong>Số tài khoản:</strong> 108876614804</p>
-                                        <p><strong>Nội dung chuyển khoản:</strong> SEVQR{orderCode}</p>
-                                        <p><strong>Số Tiền</strong> {Number(totalPrice).toLocaleString()} VNĐ</p>
+                                        <p><strong> Nội dung chuyển khoản:</strong> SEVQR{orderCode}</p>
+                                        <p><strong>Tổng số tiền:</strong> {Number(totalPrice).toLocaleString()} VND</p>
                                     </div>
                                 </div>
-
 
                                 <Typography variant="body2" sx={{ mt: 2, color: "gray" }}>
                                     Vui lòng thanh toán trong 5 phút.
@@ -222,11 +218,8 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                 {!checkingStatus && qrUrl && (
                     <Typography color="error" sx={{ mt: 2 }}>
                         Thanh toán chưa thành công sau 5 phút. Vui lòng thử lại hoặc đặt lại đơn hàng.
-
                     </Typography>
-
                 )}
-
             </Box>
         </div>
     );

@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchAddresses, updateUser } from "../../../store/actions";
-import InputField from "../../InputField";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../../../store/actions";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const ChangePasswd = () => {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
-
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();

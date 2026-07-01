@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiExternalLink, FiMapPin } from "react-icons/fi";
+import { FiExternalLink, FiMapPin, FiPhone } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { getStoresApi } from "../../../api/storeBranchApi";
 
@@ -25,7 +25,7 @@ const About = () => {
 
     return (
         <section className="min-h-screen bg-stone-50 px-4 py-10 md:px-8">
-            <div className="mx-auto max-w-6xl">
+            <div className="mx-auto ">
                 <div className="mb-8 rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-700 to-lime-600 px-6 py-10 text-white shadow-lg md:px-10">
                     <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-100">
                         Clothiq Store Locator
@@ -62,6 +62,10 @@ const About = () => {
                                         <div className="mt-4 flex items-start gap-3 text-stone-600">
                                             <FiMapPin className="mt-1 shrink-0 text-lg text-emerald-700" />
                                             <p className="text-base leading-7">{store.address}</p>
+                                        </div>
+                                        <div className="mt-2 flex items-start gap-3 text-stone-600">
+                                            <FiPhone className="mt-1 shrink-0 text-lg text-emerald-700" />
+                                            <p className="text-base leading-7">{store.phoneNumber}</p>
                                         </div>
                                     </div>
 

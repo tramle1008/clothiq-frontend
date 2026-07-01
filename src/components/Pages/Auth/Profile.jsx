@@ -2,28 +2,34 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import toast from "react-hot-toast";
+
 import api from "../../../api/api";
 import { getAuthToken, getStoredAuth } from "../../../utils/auth";
+import AddAdress from "./AddAdress";
+
+const formatAddress = (addr) =>
+    [addr?.detail, addr?.ward, addr?.province].filter(Boolean).join(", ");
 
 const Profile = () => {
     const [addresses, setAddresses] = useState(null);
     const [auth, setAuth] = useState(null);
     const [error, setError] = useState(null);
     const [user, setUser] = useState(null);
+    const [showAddressModal, setShowAddressModal] = useState(false);
 
-    useEffect(() => {
+    const loadProfileData = () => {
         const storedAuth = getStoredAuth();
         const token = getAuthToken();
 
         setAuth(storedAuth);
 
         if (!storedAuth) {
-            setError("Token không hợp lệ");
+            setError("Token khong hop le");
             return;
         }
 
         if (!token) {
-            setError("Chưa đăng nhập hoặc token không tồn tại");
+            setError("Chua dang nhap hoac token khong ton tai");
             return;
         }
 
@@ -40,13 +46,17 @@ const Profile = () => {
             .catch((err) => {
                 console.error(err);
             });
+    };
+
+    useEffect(() => {
+        loadProfileData();
     }, []);
 
     const handleDelete = async (addressId) => {
         const token = getAuthToken();
 
         if (!token) {
-            setError("Không tìm thấy token xác thực.");
+            setError("Khong tim thay token xac thuc.");
             return;
         }
 
@@ -54,11 +64,11 @@ const Profile = () => {
 
         try {
             await api.delete(`/auth/user/address/delete/${addressId}`, { headers });
-            toast.success("Cập nhật thành công");
+            toast.success("Cap nhat thanh cong");
             setAddresses((prev) => prev.filter((addr) => addr.addressId !== addressId));
         } catch (err) {
-            console.error("Lỗi khi xóa địa chỉ:", err);
-            toast.error("Bạn không thể xóa tất cả địa chỉ");
+            console.error("Loi khi xoa dia chi:", err);
+            toast.error("Ban khong the xoa tat ca dia chi");
         }
     };
 
@@ -67,28 +77,27 @@ const Profile = () => {
     }
 
     if (!auth) {
-        return <p className="mt-10 text-center text-gray-600">Đang tải dữ liệu...</p>;
+        return <p className="mt-10 text-center text-gray-600">Dang tai du lieu...</p>;
     }
 
     return (
         <div className="mx-auto my-16 max-w-4xl rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-center text-2xl font-bold">Hồ sơ người dùng</h2>
+            <h2 className="mb-4 text-center text-2xl font-bold">Ho so nguoi dung</h2>
             <ul className="mb-6 space-y-2">
-                <li><strong>Tên đăng nhập:</strong> {user?.username || auth?.userName || auth?.username}</li>
+                <li><strong>Ten dang nhap:</strong> {user?.username || auth?.userName || auth?.username}</li>
                 <li><strong>Email:</strong> {user?.email || auth?.email}</li>
             </ul>
 
             {Array.isArray(addresses) && addresses.length > 0 && (
                 <>
-                    <h3 className="mt-8 mb-4 text-xl font-semibold">Địa chỉ giao hàng</h3>
+                    <h3 className="mb-4 mt-8 text-xl font-semibold">Dia chi giao hang</h3>
                     <ul className="mb-6 space-y-2">
                         {addresses.map((addr) => (
                             <li key={addr.addressId} className="flex items-start justify-between rounded border bg-gray-50 p-3">
                                 <div>
-                                    {addr.detail ? `${addr.detail}, ` : ""}
-                                    {addr.ward}, {addr.district}, {addr.province}
+                                    {formatAddress(addr) || "--"}
                                     <br />
-                                    SĐT: {addr.phoneNumber}
+                                    SDT: {addr.phoneNumber}
                                 </div>
                                 <div className="cursor-pointer text-gray-800 hover:text-rose-600">
                                     <MdDelete size={25} onClick={() => handleDelete(addr.addressId)} />
@@ -100,17 +109,25 @@ const Profile = () => {
             )}
 
             <div className="flex gap-2">
-                <Link to="/user/update/address">
-                    <button className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-blue-100">
-                        + Thêm địa chỉ
-                    </button>
-                </Link>
+                <button
+                    type="button"
+                    onClick={() => setShowAddressModal(true)}
+                    className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-blue-100"
+                >
+                    + Them dia chi
+                </button>
                 <Link to="/user/update/password">
                     <button className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-amber-100">
-                        Đổi mật khẩu
+                        Doi mat khau
                     </button>
                 </Link>
             </div>
+
+            <AddAdress
+                open={showAddressModal}
+                onClose={() => setShowAddressModal(false)}
+                onAdded={loadProfileData}
+            />
         </div>
     );
 };

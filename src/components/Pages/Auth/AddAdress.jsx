@@ -1,38 +1,100 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import toast from "react-hot-toast";
-import { fetchAddresses } from "../../../store/actions";
-import InputField from "../../InputField";
+import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import api from "../../../api/api";
-import { getAuthToken } from "../../../utils/auth";
+import toast from "react-hot-toast";
+import { FiX } from "react-icons/fi";
 
-const AddAdress = () => {
+import api from "../../../api/api";
+import { getProvincesApi, getWardsByProvinceApi } from "../../../api/addressApi";
+import { fetchAddresses } from "../../../store/actions";
+import { getAuthToken } from "../../../utils/auth";
+import InputField from "../../InputField";
+
+const AddAdress = ({ open, onClose, onAdded }) => {
     const dispatch = useDispatch();
-    const { register, handleSubmit, formState: { errors } } = useForm();
-    const { addresses } = useSelector((state) => state.address);
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm();
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
+    const [provinces, setProvinces] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const selectedProvinceId = watch("provinceId");
 
     useEffect(() => {
-        dispatch(fetchAddresses());
-    }, [dispatch]);
+        if (!open) {
+            return;
+        }
+
+        const loadProvinces = async () => {
+            try {
+                setLoadingProvinces(true);
+                const data = await getProvincesApi();
+                setProvinces(Array.isArray(data) ? data : []);
+            } catch (loadError) {
+                toast.error("Khong the tai danh sach tinh/thanh pho");
+                console.error(loadError);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+
+        loadProvinces();
+    }, [open]);
+
+    useEffect(() => {
+        const loadWards = async () => {
+            if (!selectedProvinceId) {
+                setWards([]);
+                setValue("wardId", "");
+                return;
+            }
+
+            try {
+                setLoadingWards(true);
+                setValue("wardId", "");
+                const data = await getWardsByProvinceApi(selectedProvinceId);
+                setWards(Array.isArray(data) ? data : []);
+            } catch (loadError) {
+                toast.error("Khong the tai danh sach phuong/xa");
+                console.error(loadError);
+            } finally {
+                setLoadingWards(false);
+            }
+        };
+
+        loadWards();
+    }, [selectedProvinceId, setValue]);
+
+    const handleClose = () => {
+        setError(null);
+        reset();
+        setWards([]);
+        onClose?.();
+    };
 
     const handleAddAdress = async (data) => {
         const token = getAuthToken();
 
         if (!token) {
-            toast.error("Phiên đăng nhập của bạn đã hết hạn");
-            navigate("/login");
+            toast.error("Phien dang nhap cua ban da het han");
             return;
         }
 
+        const selectedProvince = provinces.find(
+            (province) => String(province.provinceId) === String(data.provinceId)
+        );
+        const selectedWard = wards.find(
+            (ward) => String(ward.wardId) === String(data.wardId)
+        );
+
         try {
+            setSubmitting(true);
             await api.post("/auth/user/addresses", {
-                province: data.province,
-                district: data.district,
-                ward: data.ward,
+                provinceId: Number(data.provinceId),
+                wardId: Number(data.wardId),
+                province: selectedProvince?.name || "",
+                ward: selectedWard?.name || "",
                 detail: data.detail,
                 phoneNumber: data.phoneNumber,
             }, {
@@ -42,96 +104,131 @@ const AddAdress = () => {
                 },
             });
 
-            toast.success("Thêm địa chỉ thành công!");
+            toast.success("Them dia chi thanh cong!");
             dispatch(fetchAddresses());
-            navigate(-1);
+            onAdded?.();
+            handleClose();
         } catch (requestError) {
             const message =
                 typeof requestError.response?.data === "string"
                     ? requestError.response.data
-                    : requestError.response?.data?.message || "Thêm địa chỉ thất bại";
+                    : requestError.response?.data?.message || "Them dia chi that bai";
 
             setError(message);
             toast.error(message);
+        } finally {
+            setSubmitting(false);
         }
     };
 
+    if (!open) {
+        return null;
+    }
+
     return (
-        <div className="mx-auto my-10 max-w-md rounded bg-white p-6 shadow-md">
-            <h2 className="mb-4 text-center text-2xl font-bold">Thêm địa chỉ</h2>
-            <form onSubmit={handleSubmit(handleAddAdress)} className="flex flex-col gap-4">
-                <InputField
-                    label="Tỉnh/Thành phố"
-                    id="province"
-                    type="text"
-                    placeholder="Cần Thơ"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Quận/Huyện"
-                    id="district"
-                    type="text"
-                    placeholder="Ninh Kiều"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Phường/Xã"
-                    id="ward"
-                    type="text"
-                    placeholder="An Khánh"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Ấp/Số nhà, tên đường"
-                    id="detail"
-                    type="text"
-                    placeholder="Ấp 6/A52, đường số 6"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <InputField
-                    label="Số điện thoại"
-                    id="phoneNumber"
-                    type="text"
-                    placeholder="0123456789"
-                    register={register}
-                    errors={errors}
-                    required
-                    message="Không được để trống"
-                />
-                <button
-                    type="submit"
-                    className="rounded-lg bg-gray-700 px-4 py-2 text-white transition duration-300 hover:bg-emerald-700"
-                >
-                    Thêm
-                </button>
-            </form>
-
-            {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
-
-            {addresses && addresses.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="mb-2 font-semibold">Địa chỉ hiện tại:</h3>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                        {addresses.map((addr) => (
-                            <li key={addr.addressId}>
-                                - {addr.detail ? `${addr.detail}, ` : ""}{addr.ward}, {addr.district}, {addr.province}
-                            </li>
-                        ))}
-                    </ul>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <h2 className="text-xl font-bold text-slate-900">Them dia chi</h2>
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                        aria-label="Dong"
+                    >
+                        <FiX size={20} />
+                    </button>
                 </div>
-            )}
+
+                <form onSubmit={handleSubmit(handleAddAdress)} className="space-y-4 px-5 py-5">
+                    <label className="block">
+                        <span className="mb-2 block text-sm font-medium text-gray-700">
+                            Tinh/Thanh pho
+                        </span>
+                        <select
+                            {...register("provinceId", { required: "Khong duoc de trong" })}
+                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-emerald-500"
+                            disabled={loadingProvinces}
+                        >
+                            <option value="">
+                                {loadingProvinces ? "Dang tai..." : "Chon tinh/thanh pho"}
+                            </option>
+                            {provinces.map((province) => (
+                                <option key={province.provinceId} value={province.provinceId}>
+                                    {province.name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.provinceId && (
+                            <p className="mt-1 text-xs text-red-500">{errors.provinceId.message}</p>
+                        )}
+                    </label>
+
+                    <label className="block">
+                        <span className="mb-2 block text-sm font-medium text-gray-700">
+                            Phuong/Xa
+                        </span>
+                        <select
+                            {...register("wardId", { required: "Khong duoc de trong" })}
+                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-emerald-500"
+                            disabled={!selectedProvinceId || loadingWards}
+                        >
+                            <option value="">
+                                {loadingWards ? "Dang tai..." : "Chon phuong/xa"}
+                            </option>
+                            {wards.map((ward) => (
+                                <option key={ward.wardId} value={ward.wardId}>
+                                    {ward.name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.wardId && (
+                            <p className="mt-1 text-xs text-red-500">{errors.wardId.message}</p>
+                        )}
+                    </label>
+
+                    <InputField
+                        label="Ap/So nha, ten duong"
+                        id="detail"
+                        type="text"
+                        placeholder="Ap 6/A52, duong so 6"
+                        register={register}
+                        errors={errors}
+                        required
+                        message="Khong duoc de trong"
+                    />
+
+                    <InputField
+                        label="So dien thoai"
+                        id="phoneNumber"
+                        type="text"
+                        placeholder="0123456789"
+                        register={register}
+                        errors={errors}
+                        required
+                        message="Khong duoc de trong"
+                    />
+
+                    {error && <p className="text-sm text-red-500">{error}</p>}
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                            Huy
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="rounded-lg bg-gray-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            {submitting ? "Dang them..." : "Them"}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

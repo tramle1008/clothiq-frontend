@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
     FiChevronDown,
     FiChevronUp,
+    FiEye,
     FiRotateCcw,
     FiSearch,
     FiX,
@@ -11,6 +12,7 @@ import { useSearchParams } from "react-router-dom";
 import PaginationRounded from "../../PaginationRounded";
 import api from "../../../api/api";
 import { getAuthToken } from "../../../utils/auth";
+import DetailOrderDetailsDrawer from "./DetailOrderDetailsDrawer";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 15];
 
@@ -131,6 +133,7 @@ const DetailOrder = () => {
     const [totalElements, setTotalElements] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get("page")) || 1;
@@ -300,6 +303,14 @@ const DetailOrder = () => {
         });
     };
 
+    const handleViewOrder = (order) => {
+        setSelectedOrder(order);
+    };
+
+    const handleCloseDrawer = () => {
+        setSelectedOrder(null);
+    };
+
     if (loading) {
         return (
             <div className="flex min-h-screen flex-1 flex-col p-6 pt-[88px]">
@@ -459,12 +470,12 @@ const DetailOrder = () => {
                     </div>
                 )}
 
-                <div className="overflow-hidden rounded bg-white shadow">
+                <div className="overflow-hidden rounded-md bg-white shadow">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full table-auto border-collapse border border-slate-300">
-                            <thead className="bg-slate-100">
-                                <tr>
-                                    <th className="border px-4 py-2 text-left">
+                        <table className="min-w-full border-collapse">
+                            <thead className="bg-slate-50">
+                                <tr className="text-left text-sm font-semibold text-slate-700">
+                                    <th className="px-4 py-3">
                                         <SortHeader
                                             label="Ma don"
                                             field={SORT_FIELDS.orderId}
@@ -473,7 +484,7 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="border px-4 py-2 text-left">
+                                    <th className="px-4 py-3">
                                         <SortHeader
                                             label="Ho ten"
                                             field={SORT_FIELDS.userName}
@@ -482,7 +493,7 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="border px-4 py-2 text-left">
+                                    <th className="px-4 py-3">
                                         <SortHeader
                                             label="Trang thai giao"
                                             field={SORT_FIELDS.deliveryStatus}
@@ -491,7 +502,7 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="border px-4 py-2 text-left">
+                                    <th className="px-4 py-3">
                                         <SortHeader
                                             label="Trang thai TT"
                                             field={SORT_FIELDS.paymentStatus}
@@ -500,8 +511,8 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="border px-4 py-2 text-left">Dia chi</th>
-                                    <th className="border px-4 py-2 text-right">
+                                    <th className="px-4 py-3">Dia chi</th>
+                                    <th className="px-4 py-3 text-right">
                                         <SortHeader
                                             label="So tien"
                                             field={SORT_FIELDS.totalAmount}
@@ -510,7 +521,7 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="border px-4 py-2 text-left">
+                                    <th className="px-4 py-3">
                                         <SortHeader
                                             label="Ngay dat"
                                             field={SORT_FIELDS.dateOrder}
@@ -519,46 +530,57 @@ const DetailOrder = () => {
                                             onSort={handleSort}
                                         />
                                     </th>
+                                    <th className="px-4 py-3 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {orders.length > 0 ? (
                                     orders.map((order) => (
-                                        <tr key={order.orderId} className="hover:bg-slate-50">
-                                            <td className="border px-4 py-3 text-sm font-medium text-slate-800">
+                                        <tr key={order.orderId} className="border-t border-slate-200 text-sm text-slate-700">
+                                            <td className="px-4 py-3 font-semibold text-slate-900">
                                                 #{order.orderId}
                                             </td>
-                                            <td className="border px-4 py-3 text-sm text-slate-700">
+                                            <td className="px-4 py-3">
                                                 {order.userName || "Khong ro"}
                                             </td>
-                                            <td className="border px-4 py-3 text-sm">
+                                            <td className="px-4 py-3">
                                                 <span
                                                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(order.deliveryStatus)}`}
                                                 >
                                                     {order.deliveryStatus || "--"}
                                                 </span>
                                             </td>
-                                            <td className="border px-4 py-3 text-sm">
+                                            <td className="px-4 py-3">
                                                 <span
                                                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getPaymentStyle(order.paymentStatus)}`}
                                                 >
                                                     {order.paymentStatus || "--"}
                                                 </span>
                                             </td>
-                                            <td className="border px-4 py-3 text-sm text-slate-700">
+                                            <td className="px-4 py-3">
                                                 {buildAddress(order.address)}
                                             </td>
-                                            <td className="border px-4 py-3 text-right text-sm font-semibold text-slate-800">
+                                            <td className="px-4 py-3 text-right font-semibold text-slate-900">
                                                 {formatCurrency(order.totalAmount)}
                                             </td>
-                                            <td className="border px-4 py-3 text-sm text-slate-700">
+                                            <td className="px-4 py-3">
                                                 {formatDate(order.dateOrder)}
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleViewOrder(order)}
+                                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                                >
+                                                    <FiEye size={14} />
+                                                    View
+                                                </button>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="py-6 text-center text-slate-500">
+                                        <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
                                             Khong co don hang nao.
                                         </td>
                                     </tr>
@@ -589,6 +611,12 @@ const DetailOrder = () => {
             <div className="mt-auto pt-6">
                 <PaginationRounded numberofPage={totalPages} />
             </div>
+
+            <DetailOrderDetailsDrawer
+                open={Boolean(selectedOrder)}
+                order={selectedOrder}
+                onClose={handleCloseDrawer}
+            />
         </div>
     );
 };

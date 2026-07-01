@@ -14,7 +14,6 @@ import Profile from "./components/Pages/Auth/Profile";
 import Logout from "./components/Pages/Auth/Logout";
 import OrderView from "./components/Pages/Order/OrderView";
 import Checkout from "./components/Pages/Order/Checkout";
-import AddAdress from "./components/Pages/Auth/AddAdress";
 import ChangePasswd from "./components/Pages/Auth/ChangePasswd";
 import AdminRoute from "./components/Pages/Admin/AdminRoute";
 import AdminLayout from "./components/Pages/Admin/AdminLayout";
@@ -46,7 +45,6 @@ function AppContent() {
             <Route path="/logout" element={<Logout />} />
             <Route path="/user/order" element={<OrderView />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/user/update/address" element={<AddAdress />} />
             <Route path="/user/update/password" element={<ChangePasswd />} />
 
             <Route path="/about" element={<About />} />

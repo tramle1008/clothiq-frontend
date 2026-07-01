@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 
 import InputField from "../../InputField";
-import { getProvincesApi, getWardsByProvinceApi } from "../../../api/addressApi";
-import { addUserAddressApi, loginApi, registerApi } from "../../../api/authApi";
+import { loginApi, registerApi } from "../../../api/authApi";
 import { buildAuthSession, persistAuthSession } from "../../../utils/auth";
 
 const Register = () => {
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+    const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
     const googleLoginUrl = `${import.meta.env.VITE_BACK_END_URL}/oauth2/authorize/google`;
     const handleRegister = async (data) => {

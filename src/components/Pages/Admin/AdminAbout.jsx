@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiLink, FiMapPin, FiPlus, FiRotateCcw, FiSave, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
-import AdminSidebar from "./AdminSidebar";
 import {
     createStoreApi,
     deleteStoreApi,
@@ -143,9 +142,7 @@ const AdminAbout = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-stone-100">
-            <AdminSidebar />
-            <main className="flex-1 px-4 pb-8 pt-24 md:px-8 lg:px-10">
+        <main className="min-h-screen flex-1 px-4 pb-8 pt-24 md:px-8 lg:px-10 bg-stone-100">
                 <div className="mx-auto max-w-[1500px]">
                     <section className="mb-8 rounded-[2rem] bg-gradient-to-r from-stone-900 via-stone-800 to-emerald-800 p-8 text-white shadow-xl md:p-10">
                         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
@@ -303,7 +300,6 @@ const AdminAbout = () => {
                     )}
                 </div>
             </main>
-        </div>
     );
 };
 

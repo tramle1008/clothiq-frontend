@@ -1,17 +1,12 @@
-import { Routes, Route } from "react-router-dom";
-
-import DashBoard from "./DashBoard";
+import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
-
 
 const AdminLayout = () => {
     return (
-        <div className="flex">
+        <div className="flex min-h-screen bg-gray-100">
             <AdminSidebar />
             <div style={{ flex: 1 }}>
-                <Routes>
-                    <Route path="/" element={<DashBoard />} />
-                </Routes>
+                <Outlet />
             </div>
         </div>
     );

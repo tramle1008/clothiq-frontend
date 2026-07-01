@@ -12,3 +12,19 @@ export const getCartApi = async () => {
 
     return data;
 };
+
+export const updateCartQuantityApi = async (productId, quantity) => {
+    const token = getAuthToken();
+
+    const { data } = await api.put(
+        `/auth/cart/${productId}/quantity`,
+        { quantity },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return data;
+};

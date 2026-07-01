@@ -1,34 +1,27 @@
-import axios from "axios";
 import toast from "react-hot-toast";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
 
-/**
- * Xóa một sản phẩm khỏi giỏ hàng
- * @param {number} productId - ID của sản phẩm cần xóa
- * @param {function} onSuccess - Callback khi xóa thành công (ví dụ: để làm mới giỏ hàng)
- */
 const DeleteItem = async (productId, onSuccess) => {
+    const token = getAuthToken();
 
-    const auth = JSON.parse(localStorage.getItem("auth"));
+    if (!token) {
+        toast.error("Bạn cần đăng nhập để thao tác với giỏ hàng");
+        return;
+    }
 
     try {
-        const token = auth.jwtToken;
-        const response = await api.delete(
-            `/auth/user/cart/product/${productId}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
+        const response = await api.delete(`/auth/user/cart/product/${productId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
         toast.success(response.data || "Đã xóa sản phẩm khỏi giỏ hàng");
 
-        // Gọi callback nếu được truyền
         if (onSuccess) {
             onSuccess();
         }
-
     } catch (error) {
         console.error("Lỗi khi xóa sản phẩm:", error);
         toast.error("Xóa sản phẩm thất bại");

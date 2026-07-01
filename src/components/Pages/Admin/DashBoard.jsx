@@ -15,9 +15,9 @@ import { getRevenueChart, getStats } from "../../../api/orderApi";
 import { fetchAllProduct } from "../../../store/actions";
 
 const RANGE_OPTIONS = [
-    { key: "7d", label: "1 tuan", groupBy: "day" },
-    { key: "1m", label: "1 thang", groupBy: "day" },
-    { key: "1y", label: "1 nam", groupBy: "month" },
+    { key: "7d", label: "1 tuần", groupBy: "day" },
+    { key: "1m", label: "1 tháng", groupBy: "day" },
+    { key: "1y", label: "1 năm", groupBy: "month" },
 ];
 
 const pad = (value) => String(value).padStart(2, "0");
@@ -459,54 +459,6 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
-
-            {/* <h1 className="my-5 text-center text-2xl font-semibold text-slate-800">Sản phẩm sắp hết hàng</h1> */}
-            {/* <div className="rounded bg-white shadow">
-                <table className="mr-18 min-w-full table-auto border-collapse border border-slate-300">
-                    <thead className="bg-slate-100">
-                        <tr>
-                            <th className="border px-4 py-2">#id</th>
-                            <th className="border px-4 py-2">Ảnh</th>
-                            <th className="border px-4 py-2">Tên</th>
-                            <th className="border px-4 py-2">Mô tả</th>
-                            <th className="border px-4 py-2">Giá</th>
-                            <th className="border px-4 py-2 text-red-600">Tồn kho</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {lowStockProducts.length > 0 ? (
-                            lowStockProducts.map((product, index) => (
-                                <tr key={index} className="hover:bg-slate-50">
-                                    <td className="border px-4 py-2 text-center">{product.productId}</td>
-                                    <td className="border px-4 py-2 text-center">
-                                        {product.image ? (
-                                            <img
-                                                src={product.image}
-                                                alt={product.productName}
-                                                className="mx-auto mt-1 h-14 w-14 rounded-md object-cover"
-                                            />
-                                        ) : (
-                                            <span className="italic text-gray-400">Khong co anh</span>
-                                        )}
-                                    </td>
-                                    <td className="border px-4 py-2">{product.productName}</td>
-                                    <td className="border px-4 py-2">{product.description}</td>
-                                    <td className="border px-4 py-2 text-right">
-                                        {product.price?.toLocaleString()} VND
-                                    </td>
-                                    <td className="border px-4 py-2 text-center">{product.quantity}</td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="6" className="py-4 text-center text-slate-500">
-                                    Không có sản phẩm nào sắp hết hàng
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div> */}
         </div>
     );
 };

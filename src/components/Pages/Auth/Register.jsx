@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import InputField from "../../InputField";
 import { addUserAddressApi, loginApi, registerApi } from "../../../api/authApi";
+import { buildAuthSession, persistAuthSession } from "../../../utils/auth";
 
 const Register = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -23,12 +24,29 @@ const Register = () => {
                 password: data.password,
             });
 
-            const token = loginResponse?.jwtToken;
+            const accessToken =
+                loginResponse?.accessToken ||
+                loginResponse?.accesstoken ||
+                loginResponse?.access_token ||
+                loginResponse?.token ||
+                loginResponse?.jwtToken;
+            const refreshToken =
+                loginResponse?.refreshToken ||
+                loginResponse?.refreshtoken ||
+                loginResponse?.refresh_token ||
+                null;
 
-            if (!token) {
+            if (!accessToken) {
                 toast.error("Không thể lấy token sau khi đăng ký");
                 return;
             }
+
+            const auth = buildAuthSession(accessToken, refreshToken, {
+                userName: loginResponse?.username || data.username,
+                email: loginResponse?.email || data.email,
+                role: loginResponse?.role || loginResponse?.roles,
+            });
+            persistAuthSession(auth);
 
             await addUserAddressApi(
                 {
@@ -38,7 +56,7 @@ const Register = () => {
                     detail: data.detail,
                     phoneNumber: data.phoneNumber,
                 },
-                token
+                accessToken
             );
 
             toast.success("Đăng ký và thêm địa chỉ thành công!");

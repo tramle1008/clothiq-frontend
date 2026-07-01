@@ -29,7 +29,7 @@ const Login = () => {
             const roles = response?.roles ?? response?.role;
 
             if (!accessToken) {
-                toast.error("Dang nhap that bai.");
+                toast.error("Đăng nhập thất bại");
                 return;
             }
 
@@ -43,12 +43,12 @@ const Login = () => {
             persistAuthSession(auth);
             dispatch({ type: "LOGIN_SUCCESS", payload: auth });
 
-            toast.success("Dang nhap thanh cong!");
+            toast.success("Đăng nhập thành công!");
 
             const normalizedRoles = auth.role || [];
             navigate(normalizedRoles.includes("ROLE_ADMIN") ? "/admin" : "/products");
         } catch (error) {
-            toast.error("Dang nhap loi: " + (error.response?.data?.message || "Loi ket noi"));
+            toast.error("Đăng nhập lỗi: " + (error.response?.data?.message || "Lỗi kết nối"));
         }
     };
 
@@ -57,23 +57,23 @@ const Login = () => {
             <div className="grid lg:grid-cols-[0.95fr_1.35fr]">
                 <div className="bg-gradient-to-br from-[#8c4a0f] via-[#c57a2a] to-[#f1c27d] px-8 py-10 text-white">
                     <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-100">Clothiq</p>
-                    <h2 className="mt-4 text-3xl font-bold leading-tight">Chao mung quay lai</h2>
+                    <h2 className="mt-4 text-3xl font-bold leading-tight">Chào mừng quay lại</h2>
                     <p className="mt-4 text-sm leading-6 text-amber-50/90">
-                        Dang nhap de theo doi don hang, quan ly ho so va tiep tuc mua sam nhanh hon.
+                        Đăng nhập để theo dõi đơn hàng, quản lý hồ sơ và tiếp tục mua sắm nhanh hơn.
                     </p>
 
                     <div className="mt-8 space-y-4 rounded-2xl bg-white/15 p-5 backdrop-blur-sm">
                         <div>
-                            <p className="text-sm font-semibold">Dang nhap thuong</p>
+                            <p className="text-sm font-semibold">Đăng nhập thường</p>
                             <p className="mt-1 text-sm text-amber-50/85">
-                                Dung ten dang nhap va mat khau neu ban da co tai khoan Clothiq.
+                                Dùng tên đăng nhập và mật khẩu nếu bạn đã có tài khoản Clothiq.
                             </p>
                         </div>
                         <div className="h-px bg-white/20" />
                         <a href={googleLoginUrl} className="block rounded-xl transition hover:bg-white/10">
-                            <p className="text-sm font-semibold">Dang nhap Google</p>
+                            <p className="text-sm font-semibold">Đăng nhập Google</p>
                             <p className="mt-1 text-sm text-amber-50/85">
-                                Ban co the dung Google de vao nhanh ma khong can nhap lai mat khau.
+                                Bạn có thể dùng Google để đăng nhập nhanh mà không cần nhập lại mật khẩu.
                             </p>
                         </a>
                     </div>
@@ -82,30 +82,30 @@ const Login = () => {
                 <div className="bg-[#ead7c0] px-6 py-8 sm:px-8 lg:px-10">
                     <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
                         <div>
-                            <h3 className="text-2xl font-bold text-slate-800">Dang nhap</h3>
+                            <h3 className="text-2xl font-bold text-slate-800">Đăng nhập</h3>
                         </div>
 
                         <div className="space-y-4">
                             <InputField
-                                label="Ten dang nhap"
+                                label="Tên đăng nhập"
                                 id="username"
                                 type="text"
-                                placeholder="Nhap username"
+                                placeholder="Nhập username"
                                 register={register}
                                 errors={errors}
                                 required
-                                message="Khong duoc de trong"
+                                message="Không được để trống"
                             />
 
                             <InputField
-                                label="Mat khau"
+                                label="Mật khẩu"
                                 id="password"
                                 type="password"
-                                placeholder="Nhap mat khau"
+                                placeholder="Nhập mật khẩu"
                                 register={register}
                                 errors={errors}
                                 required
-                                message="Khong duoc de trong"
+                                message="Không được để trống"
                                 min={6}
                             />
                         </div>
@@ -115,7 +115,7 @@ const Login = () => {
                                 type="submit"
                                 className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white shadow-sm transition duration-300 hover:bg-emerald-700"
                             >
-                                Dang nhap
+                                Đăng nhập
                             </button>
 
                             <a
@@ -123,17 +123,17 @@ const Login = () => {
                                 className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 transition duration-300 hover:bg-gray-50"
                             >
                                 <span className="text-lg font-semibold text-red-500">G</span>
-                                <span className="font-medium text-gray-700">Dang nhap voi Google</span>
+                                <span className="font-medium text-gray-700">Đăng nhập với Google</span>
                             </a>
                         </div>
 
                         <p className="text-center text-sm text-slate-600">
-                            Ban chua co tai khoan?
+                            Bạn chưa có tài khoản?
                             <Link
                                 to="/register"
                                 className="ml-1 font-semibold text-cyan-700 transition hover:text-cyan-900 hover:underline"
                             >
-                                Dang ky
+                                Đăng ký
                             </Link>
                         </p>
                     </form>

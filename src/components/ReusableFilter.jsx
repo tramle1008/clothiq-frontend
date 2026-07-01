@@ -38,6 +38,7 @@ const ReusableFilter = ({
         } else {
             newParams.set(filterParam, val);
         }
+        newParams.set("page", "1");
         setSelected(val);
         setSearchParams(newParams);
     };
@@ -46,6 +47,7 @@ const ReusableFilter = ({
         const newOrder = sortOrder === "asc" ? "desc" : "asc";
         const newParams = new URLSearchParams(searchParams);
         newParams.set("sortOrder", newOrder);
+        newParams.set("page", "1");
         setSortOrder(newOrder);
         setSearchParams(newParams);
     };
@@ -57,6 +59,7 @@ const ReusableFilter = ({
         } else {
             newParams.delete("key");
         }
+        newParams.set("page", "1");
         setSearchParams(newParams);
     };
 

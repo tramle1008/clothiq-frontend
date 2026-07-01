@@ -5,19 +5,33 @@ import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import ItemContent from "../Cart/ItemContent";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
+
+const getDiscountedUnitPrice = (item) => {
+    const salePrice = Number(item?.salePrice || 0);
+    const discount = Number(item?.discount || 0);
+
+    return salePrice * (100 - discount) * 0.01;
+};
+
+const getCalculatedTotalPrice = (products = []) =>
+    products.reduce((sum, item) => {
+        const quantity = Number(item?.quantity || 0);
+        return sum + getDiscountedUnitPrice(item) * quantity;
+    }, 0);
 
 const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
     const [qrUrl, setQrUrl] = useState(null);
     const [orderCode, setOrderCode] = useState(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
-    const { products, totalPrice } = useSelector((state) => state.cart);
-    const auth = localStorage.getItem("auth");
-    if (!auth) {
+    const { products } = useSelector((state) => state.cart);
+    const totalPrice = getCalculatedTotalPrice(products);
+    const token = getAuthToken();
+    if (!token) {
         toast.error("Bạn cần đăng nhập");
         return null;
     }
 
-    const token = JSON.parse(auth).jwtToken;
 
     const handlePlaceOrder = async () => {
         if (paymentMethod === "COD") {
@@ -122,7 +136,7 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                                             <h4 className="font-semibold">{item.productName}</h4>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">{item.specialPrice?.toLocaleString()}đ</h4>
+                                            <h4 className="font-semibold">{getDiscountedUnitPrice(item).toLocaleString()}đ</h4>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold">{item.quantity?.toLocaleString()}</h4>

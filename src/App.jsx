@@ -18,53 +18,69 @@ import AddAdress from "./components/Pages/Auth/AddAdress";
 import ChangePasswd from "./components/Pages/Auth/ChangePasswd";
 import AdminRoute from "./components/Pages/Admin/AdminRoute";
 import AdminLayout from "./components/Pages/Admin/AdminLayout";
-import HandleOrder from "./components/Pages/Admin/HandleOrder";
-import OrderShipped from "./components/Pages/Admin/DetailOrder";
-import AdminProductList from "./components/Pages/Admin/AdminProductList";
+import PendingOrdersPage from "./components/Pages/Admin/Order_Admin/PendingOrdersPage";
+import AdminProductList from "./components/Pages/Admin/Products/AdminProductList";
 import DetailOrder from "./components/Pages/Admin/DetailOrder";
 import DeliverRoute from "./components/Pages/Delivery/DeliverRoute";
 import Delivery from "./components/Pages/Delivery/Delivery";
-import UpdateProduct from "./components/Pages/Admin/UpdateProduct";
 import WebFooter from "./components/Pages/WebFooter";
 import About from "./components/Pages/About/About";
 import AdminAbout from "./components/Pages/Admin/AdminAbout";
-import Categories from "./components/Pages/Admin/Categories";
+
+import DashBoard from "./components/Pages/Admin/DashBoard";
+import Discount from "./components/Pages/Admin/Discounts/Discount";
+import Categories from "./components/Pages/Admin/Categories/Categories";
 
 function AppContent() {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith("/admin");
+    const routes = (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Product />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+            <Route path="/user/profile" element={<Profile />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/user/order" element={<OrderView />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/user/update/address" element={<AddAdress />} />
+            <Route path="/user/update/password" element={<ChangePasswd />} />
+
+            <Route path="/about" element={<About />} />
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<DashBoard />} />
+                <Route path="orders" element={<PendingOrdersPage />} />
+                <Route path="products" element={<AdminProductList />} />
+                <Route path="detail" element={<DetailOrder />} />
+                <Route path="about" element={<AdminAbout />} />
+                <Route path="products/categories" element={<Categories />} />
+                <Route path="products/discounts" element={<Discount />} />
+            </Route>
+            <Route path="/deliver" element={<DeliverRoute><Delivery /></DeliverRoute>} />
+        </Routes>
+    );
+
+    if (isAdminPage) {
+        return (
+            <>
+                <Toaster position="top-center" />
+                {routes}
+            </>
+        );
+    }
 
     return (
-        <>
+        <div className="flex min-h-screen flex-col bg-white">
             <Toaster position="top-center" />
-            {!isAdminPage && <Navbar />}
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Product />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-                <Route path="/user/profile" element={<Profile />} />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/user/order" element={<OrderView />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/user/update/address" element={<AddAdress />} />
-                <Route path="/user/update/password" element={<ChangePasswd />} />
-
-                <Route path="/about" element={<About />} />
-                <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>} />
-                <Route path="/admin/orders" element={<HandleOrder />} />
-                <Route path="/admin/orders/ships" element={<OrderShipped />} />
-                <Route path="/admin/products" element={<AdminProductList />} />
-                <Route path="/admin/detail" element={<DetailOrder />} />
-                <Route path="/deliver" element={<DeliverRoute><Delivery /></DeliverRoute>} />
-                <Route path="/admin/product/update/:productId" element={<UpdateProduct />} />
-                <Route path="/admin/about" element={<AdminRoute><AdminAbout /></AdminRoute>} />
-                <Route path="/admin/products/categories" element={<AdminRoute><Categories /></AdminRoute>} />
-            </Routes>
-            {!isAdminPage && <WebFooter />}
-        </>
+            <Navbar />
+            <main className="flex-1">
+                {routes}
+            </main>
+            <WebFooter />
+        </div>
     );
 }
 

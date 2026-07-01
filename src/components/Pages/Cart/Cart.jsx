@@ -1,61 +1,61 @@
-﻿import { Button } from "@headlessui/react";
-import { FaShoppingCart } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import ItemContent from "./ItemContent";
 import { useEffect, useState } from "react";
-
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+
 import { fetchCart } from "../../../store/actions";
+import { decodeJwtPayload, getAuthToken } from "../../../utils/auth";
+import ItemContent from "./ItemContent";
+
+const getDiscountedUnitPrice = (item) => {
+    const salePrice = Number(item?.salePrice || 0);
+    const discount = Number(item?.discount || 0);
+
+    return salePrice * (100 - discount) * 0.01;
+};
+
+const getCalculatedTotalPrice = (products = []) =>
+    products.reduce((sum, item) => {
+        const quantity = Number(item?.quantity || 0);
+        return sum + getDiscountedUnitPrice(item) * quantity;
+    }, 0);
 
 const Cart = () => {
     const dispatch = useDispatch();
-    const { loading, products, totalPrice, error } = useSelector((state) => state.cart);
+    const { loading, products, error } = useSelector((state) => state.cart);
     const [authMessage, setAuthMessage] = useState("");
+    const calculatedTotalPrice = getCalculatedTotalPrice(products);
 
     useEffect(() => {
-        const authRaw = localStorage.getItem("auth");
+        const token = getAuthToken();
 
-        if (!authRaw) {
-            setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
+        if (!token) {
+            setAuthMessage("Vui long dang nhap de xem gio hang.");
             return;
         }
 
-        try {
-            const auth = JSON.parse(authRaw);
-            const token = auth?.jwtToken;
+        const payload = decodeJwtPayload(token);
+        const isExpired = payload?.exp ? payload.exp * 1000 <= Date.now() : false;
 
-            if (!token) {
-                setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
-                return;
-            }
-
-            const payloadBase64 = token.split(".")[1];
-            const payload = JSON.parse(atob(payloadBase64));
-            const isExpired = payload?.exp ? payload.exp * 1000 <= Date.now() : false;
-
-            if (isExpired) {
-                setAuthMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-                return;
-            }
-
-            setAuthMessage("");
-            dispatch(fetchCart());
-        } catch (_e) {
-            setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
+        if (isExpired) {
+            setAuthMessage("Phien dang nhap da het han. Vui long dang nhap lai.");
+            return;
         }
+
+        setAuthMessage("");
+        dispatch(fetchCart());
     }, [dispatch]);
 
     return (
-        <div className="lg:px-14 sm:px-8 py-10">
+        <div className="py-10 sm:px-8 lg:px-14">
             <div>
-                <div className="flex flex-col items-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-500 flex items-center gap-1.5">
-                        Giỏ Hàng
+                <div className="mb-12 flex flex-col items-center">
+                    <h1 className="flex items-center gap-1.5 text-4xl font-bold text-gray-500">
+                        Gio Hang
                     </h1>
                 </div>
 
-                <div className="grid grid-cols-6 font-semibold text-center py-2 border-b text-sm md:text-base">
-                    <div className="col-span-2 text-left pl-2">Sản phẩm</div>
+                <div className="grid grid-cols-6 border-b py-2 text-center text-sm font-semibold md:text-base">
+                    <div className="col-span-2 pl-2 text-left">Sản phẩm</div>
                     <div>Giá</div>
                     <div>Số lượng</div>
                     <div>Thành tiền</div>
@@ -63,11 +63,11 @@ const Cart = () => {
                 </div>
 
                 {loading ? (
-                    <p className="text-center mt-4">Đang tải...</p>
+                    <p className="mt-4 text-center">Đang tải...</p>
                 ) : authMessage ? (
-                    <p className="text-amber-600 mt-4 text-center">{authMessage}</p>
+                    <p className="mt-4 text-center text-amber-600">{authMessage}</p>
                 ) : error ? (
-                    <p className="text-red-500 mt-4 text-center">{error}</p>
+                    <p className="mt-4 text-center text-red-500">{error}</p>
                 ) : products.length > 0 ? (
                     <>
                         {products.map((item, index) => (
@@ -78,23 +78,28 @@ const Cart = () => {
                                 onRemove={() => dispatch(fetchCart())}
                             />
                         ))}
-                        <div className="mt-6 text-xl font-semibold text-right">
-                            Tổng cộng: {Number(totalPrice).toLocaleString()} VND
+                        <div className="mt-6 text-right">
+                            <div className="text-sm text-slate-500">
+                                Thành tiền
+                            </div>
+                            <div className="text-xl font-semibold text-emerald-700">
+                                {calculatedTotalPrice.toLocaleString()} VND
+                            </div>
                         </div>
                     </>
                 ) : (
-                    <p className="text-gray-400 mt-4 text-center">Giỏ hàng trống.</p>
+                    <p className="mt-4 text-center text-gray-400">Giỏ hàng trống.</p>
                 )}
             </div>
 
-            <div className="flex justify-end mt-4">
+            <div className="mt-4 flex justify-end">
                 <Link to="/checkout">
                     <button
                         disabled={products.length === 0}
-                        className={`${products.length === 0
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                            } font-semibold px-6 py-2 rounded-lg shadow-md transition duration-300`}
+                        className={`rounded-lg px-6 py-2 font-semibold shadow-md transition duration-300 ${products.length === 0
+                            ? "cursor-not-allowed bg-gray-300 text-gray-500"
+                            : "bg-emerald-600 text-white hover:bg-emerald-700"
+                            }`}
                     >
                         Thanh toán
                     </button>

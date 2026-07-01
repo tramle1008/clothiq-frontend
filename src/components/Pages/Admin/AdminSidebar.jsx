@@ -5,7 +5,6 @@ import {
     AppBar as MuiAppBar,
     Box,
     Button,
-    Chip,
     Collapse,
     CssBaseline,
     Divider,
@@ -23,15 +22,14 @@ import {
     MdDashboard,
     MdExpandLess,
     MdExpandMore,
-    MdOutlineDescription,
     MdOutlineMenu,
 } from 'react-icons/md';
-import { FaChevronLeft, FaChevronRight, FaRegListAlt } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { FiMapPin } from 'react-icons/fi';
 import { IoIosLogOut } from 'react-icons/io';
 import { LuClipboardList, LuShoppingBag } from 'react-icons/lu';
 
-const drawerWidth = 272;
+const drawerWidth = 268;
 const collapsedWidth = 88;
 
 const openedMixin = (theme) => ({
@@ -64,9 +62,9 @@ const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
     zIndex: theme.zIndex.drawer + 1,
-    backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    color: '#fff',
-    boxShadow: '0 18px 40px rgba(15, 23, 42, 0.18)',
+    backgroundImage: 'linear-gradient(135deg, #334155 0%, #475569 100%)',
+    color: '#f8fafc',
+    boxShadow: '0 16px 36px rgba(51, 65, 85, 0.18)',
     transition: theme.transitions.create(['width', 'margin-left'], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -104,10 +102,10 @@ const Drawer = styled(MuiDrawer, {
 
 const navGroups = [
     {
-        section: 'TỔNG QUAN',
+        section: 'Tổng quan',
         items: [
             {
-                label: 'Tổng quan',
+                label: 'Bảng điều khiển',
                 icon: MdDashboard,
                 to: '/admin',
                 exact: true,
@@ -115,36 +113,44 @@ const navGroups = [
         ],
     },
     {
-        section: 'QUẢN LÝ',
+        section: 'Quản lý',
         items: [
             {
                 label: 'Sản phẩm',
                 icon: LuShoppingBag,
                 children: [
                     {
-                        label: 'Danh sách',
-                        icon: FaRegListAlt,
+                        label: 'Danh sách sản phẩm',
                         to: '/admin/products',
+                        exact: true,
                     },
                     {
-                        label: 'Danh mục',
-                        icon: MdOutlineDescription,
+                        label: 'Danh mục sản phẩm',
                         to: '/admin/products/categories',
+                    },
+                    {
+                        label: 'Giảm giá',
+                        to: '/admin/products/discounts',
+                    }
+                ],
+            },
+            {
+                label: 'Đơn hàng',
+                icon: LuClipboardList,
+                children: [
+                    {
+                        label: 'Chờ xác nhận',
+                        to: '/admin/orders',
+                    },
+                    {
+                        label: 'Danh sách đơn hàng',
+                        to: '/admin/detail',
+                        exact: true,
                     },
                 ],
             },
             {
-                label: 'Đơn hàng chờ xác nhận',
-                icon: LuClipboardList,
-                to: '/admin/orders',
-            },
-            {
-                label: 'Tất cả đơn hàng',
-                icon: FaRegListAlt,
-                to: '/admin/detail',
-            },
-            {
-                label: 'Địa chỉ cơ sở',
+                label: 'Cơ sở',
                 icon: FiMapPin,
                 to: '/admin/about',
             },
@@ -153,6 +159,10 @@ const navGroups = [
 ];
 
 const getMatch = (pathname, item) => {
+    if (!item.to) {
+        return false;
+    }
+
     if (item.exact) {
         return pathname === item.to;
     }
@@ -160,14 +170,28 @@ const getMatch = (pathname, item) => {
     return pathname.startsWith(item.to);
 };
 
+const getChildMatch = (pathname, item) => {
+    if (!item.children?.length) {
+        return false;
+    }
+
+    return item.children.some((child) => getMatch(pathname, child));
+};
+
 export default function AdminSidebar() {
     const theme = useTheme();
     const location = useLocation();
     const [open, setOpen] = React.useState(true);
     const [auth, setAuth] = React.useState(null);
-
-    const isProductRoute = location.pathname.startsWith('/admin/products');
-    const [openProductMenu, setOpenProductMenu] = React.useState(isProductRoute);
+    const [openMenus, setOpenMenus] = React.useState(() =>
+        navGroups
+            .flatMap((group) => group.items)
+            .filter((item) => item.children?.length)
+            .reduce((acc, item) => {
+                acc[item.label] = getChildMatch(location.pathname, item);
+                return acc;
+            }, {})
+    );
 
     React.useEffect(() => {
         const storedAuth = localStorage.getItem('auth');
@@ -184,76 +208,152 @@ export default function AdminSidebar() {
     }, []);
 
     React.useEffect(() => {
-        if (isProductRoute) {
-            setOpenProductMenu(true);
-        }
-    }, [isProductRoute]);
+        setOpenMenus((prev) =>
+            navGroups
+                .flatMap((group) => group.items)
+                .filter((item) => item.children?.length)
+                .reduce((acc, item) => {
+                    acc[item.label] = getChildMatch(location.pathname, item) || prev[item.label] || false;
+                    return acc;
+                }, {})
+        );
+    }, [location.pathname]);
 
-    const renderNavItem = (item, isChild = false) => {
-        const Icon = item.icon;
-        const isActive = item.children ? isProductRoute : item.to ? getMatch(location.pathname, item) : false;
+    const toggleMenu = (label) => {
+        setOpenMenus((prev) => ({
+            ...prev,
+            [label]: !prev[label],
+        }));
+    };
+
+    const renderChildItem = (item) => {
+        const isActive = getMatch(location.pathname, item);
 
         return (
-            <ListItem
-                key={item.label}
-                disablePadding
-                sx={{ display: 'block', mb: isChild ? 0.5 : 0.75 }}
-            >
+            <ListItem key={item.label} disablePadding sx={{ display: 'block', mb: 0.5 }}>
                 <ListItemButton
-                    component={item.to ? NavLink : 'button'}
+                    component={NavLink}
                     to={item.to}
-                    onClick={item.children ? () => {
-                        setOpenProductMenu((prev) => !prev);
-                        if (!open) {
-                            setOpen(true);
-                        }
-                    } : undefined}
                     selected={isActive}
                     sx={{
-                        minHeight: 50,
-                        px: open ? 1.5 : 1.25,
-                        py: 0.75,
-                        mx: open ? 1 : 1.25,
-                        borderRadius: 3,
-                        justifyContent: open ? 'initial' : 'center',
-                        backgroundColor: isActive ? '#0f172a' : 'transparent',
-                        color: isActive ? '#fff' : '#334155',
+                        minHeight: 42,
+                        mx: 1.5,
+                        pl: 3.75,
+                        pr: 1.5,
+                        borderRadius: 2.5,
+                        color: isActive ? '#334155' : '#64748b',
+                        backgroundColor: isActive ? '#dbe4ee' : 'transparent',
                         '&:hover': {
-                            backgroundColor: isActive ? '#0f172a' : alpha('#0f172a', 0.06),
+                            backgroundColor: isActive ? '#dbe4ee' : alpha('#64748b', 0.08),
                         },
                         '&.Mui-selected': {
-                            backgroundColor: '#0f172a',
-                            color: '#fff',
+                            backgroundColor: '#dbe4ee',
+                            color: '#334155',
                             '&:hover': {
-                                backgroundColor: '#0f172a',
+                                backgroundColor: '#dbe4ee',
                             },
                         },
                     }}
                 >
-                    <ListItemIcon
-                        sx={{
-                            minWidth: 0,
-                            mr: open ? 1.5 : 0,
-                            justifyContent: 'center',
-                            color: 'inherit',
-                            fontSize: 22,
-                        }}
-                    >
-                        <Icon />
-                    </ListItemIcon>
                     <ListItemText
                         primary={item.label}
                         sx={{
-                            opacity: open ? 1 : 0,
                             '& .MuiTypography-root': {
-                                fontSize: isChild ? '0.95rem' : '0.98rem',
-                                fontWeight: isActive ? 700 : 600,
+                                fontSize: '0.93rem',
+                                fontWeight: isActive ? 700 : 500,
                             },
                         }}
                     />
-                    {item.children && open && (openProductMenu ? <MdExpandLess /> : <MdExpandMore />)}
                 </ListItemButton>
             </ListItem>
+        );
+    };
+
+    const renderParentItem = (item) => {
+        const Icon = item.icon;
+        const isActive = item.children ? getChildMatch(location.pathname, item) : getMatch(location.pathname, item);
+        const buttonProps = item.to
+            ? { component: NavLink, to: item.to }
+            : { component: 'button', type: 'button' };
+
+        return (
+            <Box key={item.label}>
+                <ListItem disablePadding sx={{ display: 'block', mb: 0.75 }}>
+                    <ListItemButton
+                        {...buttonProps}
+                        onClick={
+                            item.children
+                                ? () => {
+                                    toggleMenu(item.label);
+                                    if (!open) {
+                                        setOpen(true);
+                                    }
+                                }
+                                : undefined
+                        }
+                        selected={isActive}
+                        sx={{
+                            minHeight: 50,
+                            px: open ? 1.5 : 1.25,
+                            py: 0.75,
+                            mx: open ? 1 : 1.25,
+                            borderRadius: 3,
+                            justifyContent: open ? 'initial' : 'center',
+                            backgroundColor: isActive ? '#64748b' : 'transparent',
+                            color: isActive ? '#f8fafc' : '#334155',
+                            '&:hover': {
+                                backgroundColor: isActive ? '#64748b' : alpha('#64748b', 0.1),
+                            },
+                            '&.Mui-selected': {
+                                backgroundColor: '#64748b',
+                                color: '#f8fafc',
+                                '&:hover': {
+                                    backgroundColor: '#64748b',
+                                },
+                            },
+                        }}
+                    >
+                        <ListItemIcon
+                            sx={{
+                                minWidth: 0,
+                                mr: open ? 1.5 : 0,
+                                justifyContent: 'center',
+                                color: 'inherit',
+                                fontSize: 22,
+                            }}
+                        >
+                            <Icon />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary={item.label}
+                            sx={{
+                                opacity: open ? 1 : 0,
+                                '& .MuiTypography-root': {
+                                    fontSize: '0.97rem',
+                                    fontWeight: isActive ? 700 : 600,
+                                },
+                            }}
+                        />
+                        {item.children && open && ((openMenus[item.label] ?? false) ? <MdExpandLess /> : <MdExpandMore />)}
+                    </ListItemButton>
+                </ListItem>
+
+                {item.children && (
+                    <Collapse in={(openMenus[item.label] ?? false) && open} timeout="auto" unmountOnExit>
+                        <Box
+                            sx={{
+                                ml: 3.5,
+                                mb: 1,
+                                borderLeft: '1px solid rgba(148, 163, 184, 0.45)',
+                            }}
+                        >
+                            <List disablePadding sx={{ py: 0.25 }}>
+                                {item.children.map(renderChildItem)}
+                            </List>
+                        </Box>
+                    </Collapse>
+                )}
+            </Box>
         );
     };
 
@@ -271,8 +371,8 @@ export default function AdminSidebar() {
                                 onClick={() => setOpen(true)}
                                 edge="start"
                                 sx={{
-                                    border: '1px solid rgba(255,255,255,0.16)',
-                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    bgcolor: 'rgba(255,255,255,0.08)',
                                 }}
                             >
                                 <MdOutlineMenu />
@@ -286,15 +386,15 @@ export default function AdminSidebar() {
                                 sx={{
                                     color: 'inherit',
                                     textDecoration: 'none',
-                                    fontSize: '1.1rem',
+                                    fontSize: '1.08rem',
                                     fontWeight: 700,
                                     letterSpacing: '0.02em',
                                 }}
                             >
                                 Clothiq Admin
                             </Typography>
-                            <Typography sx={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.72)' }}>
-                                {auth?.userName || 'Administrator'}
+                            <Typography sx={{ fontSize: '0.82rem', color: 'rgba(248, 250, 252, 0.78)' }}>
+                                {auth?.userName || auth?.username || 'Administrator'}
                             </Typography>
                         </Box>
                     </Box>
@@ -311,10 +411,11 @@ export default function AdminSidebar() {
                             py: 1,
                             textTransform: 'none',
                             fontWeight: 700,
-                            backgroundColor: '#ef4444',
+                            color: '#fff',
+                            backgroundColor: '#7f1d1d',
                             boxShadow: 'none',
                             '&:hover': {
-                                backgroundColor: '#dc2626',
+                                backgroundColor: '#991b1b',
                                 boxShadow: 'none',
                             },
                         }}
@@ -331,8 +432,8 @@ export default function AdminSidebar() {
                     '& .MuiDrawer-paper': {
                         backgroundColor: '#f8fafc',
                         color: '#0f172a',
-                        borderRight: '1px solid rgba(148, 163, 184, 0.2)',
-                        boxShadow: '12px 0 32px rgba(15, 23, 42, 0.06)',
+                        borderRight: '1px solid rgba(148, 163, 184, 0.18)',
+                        boxShadow: '10px 0 30px rgba(71, 85, 105, 0.08)',
                     },
                 }}
             >
@@ -349,12 +450,12 @@ export default function AdminSidebar() {
                     >
                         <Box
                             sx={{
-                                width: 38,
-                                height: 38,
-                                borderRadius: 2.5,
+                                width: 40,
+                                height: 40,
+                                borderRadius: 3,
                                 display: 'grid',
                                 placeItems: 'center',
-                                backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
+                                backgroundColor: '#64748b',
                                 color: '#fff',
                                 fontWeight: 800,
                             }}
@@ -362,32 +463,23 @@ export default function AdminSidebar() {
                             C
                         </Box>
                         <Box>
-                            <Typography sx={{ fontSize: '0.96rem', fontWeight: 800 }}>
-                                Control Center
+                            <Typography sx={{ fontSize: '0.96rem', fontWeight: 800, color: '#334155' }}>
+                                Điều hướng
                             </Typography>
-                            <Chip
-                                label="Admin panel"
-                                size="small"
-                                sx={{
-                                    mt: 0.5,
-                                    height: 22,
-                                    borderRadius: 999,
-                                    fontWeight: 700,
-                                    backgroundColor: alpha('#0f172a', 0.08),
-                                    color: '#334155',
-                                }}
-                            />
+                            <Typography sx={{ mt: 0.25, fontSize: '0.8rem', color: '#94a3b8' }}>
+                                Khu vực quản trị
+                            </Typography>
                         </Box>
                     </Box>
 
                     <IconButton
                         onClick={() => setOpen((prev) => !prev)}
                         sx={{
-                            color: '#0f172a',
-                            border: '1px solid rgba(148, 163, 184, 0.28)',
+                            color: '#475569',
+                            border: '1px solid rgba(148, 163, 184, 0.3)',
                             backgroundColor: '#fff',
                             '&:hover': {
-                                backgroundColor: '#e2e8f0',
+                                backgroundColor: '#f1f5f9',
                             },
                         }}
                     >
@@ -407,7 +499,7 @@ export default function AdminSidebar() {
                                     textAlign: open ? 'left' : 'center',
                                     fontSize: '0.72rem',
                                     fontWeight: 800,
-                                    letterSpacing: '0.12em',
+                                    letterSpacing: '0.1em',
                                     color: '#94a3b8',
                                     opacity: open ? 1 : 0,
                                     transition: 'opacity 0.2s ease',
@@ -416,19 +508,7 @@ export default function AdminSidebar() {
                                 {group.section}
                             </Typography>
 
-                            {group.items.map((item) => (
-                                <Box key={item.label}>
-                                    {renderNavItem(item)}
-
-                                    {item.children && (
-                                        <Collapse in={openProductMenu && open} timeout="auto" unmountOnExit>
-                                            <List disablePadding sx={{ mt: -0.25, mb: 0.5 }}>
-                                                {item.children.map((child) => renderNavItem(child, true))}
-                                            </List>
-                                        </Collapse>
-                                    )}
-                                </Box>
-                            ))}
+                            {group.items.map(renderParentItem)}
                         </Box>
                     ))}
                 </List>

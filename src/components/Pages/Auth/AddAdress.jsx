@@ -1,35 +1,26 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import axios from "axios";
 import { fetchAddresses } from "../../../store/actions";
 import InputField from "../../InputField";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import api from "../../../api/api";
+import { getAuthToken } from "../../../utils/auth";
 
 const AddAdress = () => {
     const dispatch = useDispatch();
     const { register, handleSubmit, formState: { errors } } = useForm();
-    const storedAuth = localStorage.getItem("auth");
     const { addresses } = useSelector((state) => state.address);
-    const [auth, setAuth] = useState(null);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
     useEffect(() => {
         dispatch(fetchAddresses());
     }, [dispatch]);
 
     const handleAddAdress = async (data) => {
-        let token;
-        try {
-            const parsedAuth = JSON.parse(storedAuth);
-            setAuth(parsedAuth);
-            token = parsedAuth?.jwtToken;
-        } catch {
-            setError("Token không hợp lệ");
-            return;
-        }
+        const token = getAuthToken();
 
         if (!token) {
             toast.error("Phiên đăng nhập của bạn đã hết hạn");
@@ -54,19 +45,20 @@ const AddAdress = () => {
             toast.success("Thêm địa chỉ thành công!");
             dispatch(fetchAddresses());
             navigate(-1);
-        } catch (error) {
+        } catch (requestError) {
             const message =
-                typeof error.response?.data === "string"
-                    ? error.response.data
-                    : error.response?.data?.message || "Thêm địa chỉ thất bại";
+                typeof requestError.response?.data === "string"
+                    ? requestError.response.data
+                    : requestError.response?.data?.message || "Thêm địa chỉ thất bại";
 
+            setError(message);
             toast.error(message);
         }
     };
 
     return (
-        <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto my-10">
-            <h2 className="text-2xl font-bold mb-4  text-center">Thêm địa chỉ</h2>
+        <div className="mx-auto my-10 max-w-md rounded bg-white p-6 shadow-md">
+            <h2 className="mb-4 text-center text-2xl font-bold">Thêm địa chỉ</h2>
             <form onSubmit={handleSubmit(handleAddAdress)} className="flex flex-col gap-4">
                 <InputField
                     label="Tỉnh/Thành phố"
@@ -99,10 +91,10 @@ const AddAdress = () => {
                     message="Không được để trống"
                 />
                 <InputField
-                    label="Ấp/ Số nhà, tên đường"
+                    label="Ấp/Số nhà, tên đường"
                     id="detail"
                     type="text"
-                    placeholder="Ấp 6/ A52, đường số 6"
+                    placeholder="Ấp 6/A52, đường số 6"
                     register={register}
                     errors={errors}
                     required
@@ -120,19 +112,21 @@ const AddAdress = () => {
                 />
                 <button
                     type="submit"
-                    className="bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition duration-300"
+                    className="rounded-lg bg-gray-700 px-4 py-2 text-white transition duration-300 hover:bg-emerald-700"
                 >
                     Thêm
                 </button>
             </form>
 
+            {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+
             {addresses && addresses.length > 0 && (
                 <div className="mt-6">
-                    <h3 className="font-semibold mb-2">Địa chỉ hiện tại:</h3>
+                    <h3 className="mb-2 font-semibold">Địa chỉ hiện tại:</h3>
                     <ul className="space-y-1 text-sm text-gray-700">
                         {addresses.map((addr) => (
                             <li key={addr.addressId}>
-                                • {addr.detail ? `${addr.detail}, ` : ''} {addr.ward}, {addr.district}, {addr.province}
+                                - {addr.detail ? `${addr.detail}, ` : ""}{addr.ward}, {addr.district}, {addr.province}
                             </li>
                         ))}
                     </ul>

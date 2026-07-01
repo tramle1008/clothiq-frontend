@@ -1,11 +1,9 @@
-
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { fetchUserOrders } from "../../../store/actions";
-import axios from "axios";
 import api from "../../../api/api";
 import toast from "react-hot-toast";
-
+import { getAuthToken } from "../../../utils/auth";
 
 const OrderView = () => {
     const dispatch = useDispatch();
@@ -13,7 +11,7 @@ const OrderView = () => {
         orders = [],
         totalPages = 0,
         loading = false,
-        error = null
+        error = null,
     } = useSelector((state) => state.orderUser || {});
 
     const [page, setPage] = useState(0);
@@ -25,12 +23,16 @@ const OrderView = () => {
 
     const handleCancel = async (orderId, onSuccess) => {
         try {
-            const auth = JSON.parse(localStorage.getItem("auth"));
-            const token = auth?.jwtToken;
+            const token = getAuthToken();
 
-            const response = await api.put(
+            if (!token) {
+                toast.error("Phiên đăng nhập đã hết hạn");
+                return;
+            }
+
+            await api.put(
                 `/orders/${orderId}/reject`,
-                {}, // body rỗng
+                {},
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -39,31 +41,34 @@ const OrderView = () => {
             );
 
             toast.success("Đơn hàng đã bị từ chối");
-            console.log("Hủy đơn:", orderId);
 
-            if (onSuccess) onSuccess();
-        } catch (error) {
-            console.error("Lỗi xác nhận từ chối", error);
+            if (onSuccess) {
+                onSuccess();
+            }
+        } catch (requestError) {
+            console.error("Lỗi xác nhận từ chối", requestError);
             toast.error("Không thể từ chối đơn hàng!");
         }
     };
 
     const handlePrev = () => {
-        if (page > 0) setPage((prev) => prev - 1);
+        if (page > 0) {
+            setPage((prev) => prev - 1);
+        }
     };
 
     const handleNext = () => {
-        if (page < totalPages - 1) setPage((prev) => prev + 1);
+        if (page < totalPages - 1) {
+            setPage((prev) => prev + 1);
+        }
     };
 
     return (
-        <div className="max-w-2xl mx-auto mt-5 shadow-md rounded-lg p-4">
-            <h2 className="text-xl font-bold mb-4">Lịch sử đơn hàng</h2>
+        <div className="mx-auto mt-5 max-w-2xl rounded-lg p-4 shadow-md">
+            <h2 className="mb-4 text-xl font-bold">Lịch sử đơn hàng</h2>
 
             {loading && <p className="text-gray-600">Đang tải đơn hàng...</p>}
-
             {error && <p className="text-red-500">{error}</p>}
-
 
             {!loading && !error && (
                 <>
@@ -71,39 +76,37 @@ const OrderView = () => {
                         <p>Không có đơn hàng nào.</p>
                     ) : (
                         <>
-                            <ul className="space-y-4 border rounded shadow-sm">
+                            <ul className="space-y-4 rounded border shadow-sm">
                                 {orders.map((order) => (
-                                    <li key={order.orderId} className="p-2 border-b">
+                                    <li key={order.orderId} className="border-b p-2">
                                         <h3 className="font-semibold">Mã đơn: {order.orderId}</h3>
                                         <p>
                                             <strong>Ngày đặt:</strong>{" "}
                                             {new Date(order.dateOrder).toLocaleDateString("vi-VN")}
                                         </p>
                                         <p>
-                                            <strong>Trạng thái thanh toán:</strong>{" "}
-                                            {order.paymentStatus}
+                                            <strong>Trạng thái thanh toán:</strong> {order.paymentStatus}
                                         </p>
                                         <p>
                                             <strong>Trạng thái giao hàng:</strong>{" "}
-                                            <span className="text-red-600"> {order.deliveryStatus === "PENDING" ? "Đang duyệt" :
-                                                order.deliveryStatus === "SHIPPED" ? "Đang giao hàng" :
-                                                    order.deliveryStatus === "REJECTED" ? "Hủy" :
-                                                        order.deliveryStatus === "DELIVERED" ? "Đã giao" : ""}
-                                            </span></p>
+                                            <span className="text-red-600">
+                                                {order.deliveryStatus === "PENDING" ? "Đang duyệt" :
+                                                    order.deliveryStatus === "SHIPPED" ? "Đang giao hàng" :
+                                                        order.deliveryStatus === "REJECTED" ? "Hủy" :
+                                                            order.deliveryStatus === "DELIVERED" ? "Đã giao" : ""}
+                                            </span>
+                                        </p>
                                         <p>
-                                            <strong>Tổng tiền:</strong>{" "}
-                                            {order.totalAmount.toLocaleString("vi-VN")} VNĐ
+                                            <strong>Tổng tiền:</strong> {order.totalAmount.toLocaleString("vi-VN")} VNĐ
                                         </p>
                                         <p className="mt-2">
                                             <strong>Địa chỉ giao hàng:</strong>{" "}
                                             {order.address?.detail ? `${order.address.detail}, ` : ""}
-                                            {order.address?.ward}, {order.address?.district},{" "}
-                                            {order.address?.province}
+                                            {order.address?.ward}, {order.address?.district}, {order.address?.province}
                                         </p>
                                         <p>
                                             <strong>SĐT:</strong> {order.address?.phoneNumber}
                                         </p>
-
 
                                         <div className="mt-3">
                                             <h4 className="font-medium">Sản phẩm:</h4>
@@ -120,12 +123,13 @@ const OrderView = () => {
                                         {order.deliveryStatus === "PENDING" && (
                                             <div className="mt-4 flex flex-col gap-2">
                                                 <span className="text-sm text-neutral-500">
-                                                    Đơn hàng thường được giao sau 4 ngày. <br />
+                                                    Đơn hàng thường được giao sau 4 ngày.
+                                                    <br />
                                                     Chỉ có thể hủy đơn hàng khi trạng thái là PENDING.
                                                 </span>
                                                 <button
                                                     onClick={() => handleCancel(order.orderId, () => dispatch(fetchUserOrders(page, size)))}
-                                                    className="text-rose-700 border border-rose-600 rounded-md bg-red-100 hover:bg-rose-600 hover:text-white transition-colors duration-200 px-6 py-2 font-semibold"
+                                                    className="rounded-md border border-rose-600 bg-red-100 px-6 py-2 font-semibold text-rose-700 transition-colors duration-200 hover:bg-rose-600 hover:text-white"
                                                 >
                                                     Hủy Đơn Hàng
                                                 </button>
@@ -135,12 +139,11 @@ const OrderView = () => {
                                 ))}
                             </ul>
 
-                            {/* Phân trang */}
-                            <div className="mt-4 flex justify-between items-center">
+                            <div className="mt-4 flex items-center justify-between">
                                 <button
                                     onClick={handlePrev}
                                     disabled={page === 0}
-                                    className="px-4 py-2 rounded border bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+                                    className="rounded border bg-gray-100 px-4 py-2 hover:bg-gray-200 disabled:opacity-50"
                                 >
                                     Trang trước
                                 </button>
@@ -152,7 +155,7 @@ const OrderView = () => {
                                 <button
                                     onClick={handleNext}
                                     disabled={page >= totalPages - 1}
-                                    className="px-4 py-2 rounded border bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+                                    className="rounded border bg-gray-100 px-4 py-2 hover:bg-gray-200 disabled:opacity-50"
                                 >
                                     Trang sau
                                 </button>

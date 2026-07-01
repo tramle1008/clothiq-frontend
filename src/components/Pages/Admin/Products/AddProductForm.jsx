@@ -19,9 +19,9 @@ import {
 } from "@mui/material";
 import { FiImage, FiPackage, FiTag, FiUploadCloud, FiX } from "react-icons/fi";
 
-import { addProductApi } from "../../../api/inventoryApi";
-import { fetchCategories } from "../../../store/actions";
-import { getAuthToken } from "../../../utils/auth";
+import { addProductApi } from "../../../../api/inventoryApi";
+import { fetchCategories } from "../../../../store/actions";
+import { getAuthToken } from "../../../../utils/auth";
 
 const fieldSx = {
     "& .MuiOutlinedInput-root": {
@@ -112,7 +112,8 @@ const AddProductForm = ({ onClose, onSuccess }) => {
             productName: "",
             description: "",
             quantity: "",
-            price: "",
+            salePrice: "",
+            costPrice: "",
             discount: 0,
         },
     });
@@ -180,8 +181,10 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                     productName: data.productName.trim(),
                     description: data.description.trim(),
                     quantity: Number(data.quantity),
-                    price: Number(data.price),
+                    salePrice: Number(data.salePrice),
+                    costPrice: data.costPrice === "" ? null : Number(data.costPrice),
                     discount: Number(data.discount),
+                    status: "ACTIVE",
                 },
                 imageFile,
                 token,
@@ -205,8 +208,8 @@ const AddProductForm = ({ onClose, onSuccess }) => {
             elevation={0}
             sx={{
                 width: "100%",
-                maxWidth: 1320,
-                mt: { xs: 5, md: 6 },
+                maxWidth: 1480,
+                mt: { xs: 3, md: 4 },
                 mx: "auto",
                 borderRadius: 6,
                 overflow: "hidden",
@@ -219,17 +222,17 @@ const AddProductForm = ({ onClose, onSuccess }) => {
             <Box
                 sx={{
                     px: { xs: 3, md: 4 },
-                    py: { xs: 3.5, md: 4.5 },
+                    py: { xs: 2.25, md: 2.75 },
                     background: "linear-gradient(135deg, #f8fbff 0%, #e2e8f0 100%)",
                     borderBottom: "1px solid #dbe3ec",
                 }}
             >
-                <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
                     <Box>
                         <Typography
                             sx={{
-                                fontSize: { xs: "1.85rem", md: "2.35rem" },
-                                lineHeight: 1.1,
+                                fontSize: { xs: "1.4rem", md: "1.9rem" },
+                                lineHeight: 1,
                                 fontWeight: 800,
                                 color: "#0f172a",
                                 fontFamily: "'Segoe UI', sans-serif",
@@ -256,12 +259,12 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                 </Stack>
             </Box>
 
-            <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: { xs: 2, md: 3 } }}>
+            <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: { xs: 2, md: 2.25 } }}>
                 <Box
                     sx={{
                         display: "grid",
                         gridTemplateColumns: { xs: "1fr", xl: "1fr 1fr" },
-                        gap: { xs: 2.5, md: 3 },
+                        gap: { xs: 2, md: 2.25 },
                         alignItems: "stretch",
                     }}
                 >
@@ -273,8 +276,8 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                 sx={compactSectionHeaderSx}
                             />
                             <Divider />
-                            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
-                                <Stack spacing={2.5}>
+                            <Box sx={{ p: { xs: 2, md: 2.25 }, flex: 1 }}>
+                                <Stack spacing={2}>
                                     <TextField
                                         fullWidth
                                         label="Tên sản phẩm"
@@ -283,7 +286,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         helperText={errors.productName?.message}
                                         sx={fieldSx}
                                         {...register("productName", {
-                                            required: "Không thể để trống",
+                                            required: "Vui lòng nhập tên sản phẩm",
                                         })}
                                     />
 
@@ -296,22 +299,22 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                     >
                                         <TextField
                                             fullWidth
-                                            label="Mã sản phẩm"
+                                            label="Ma san pham"
                                             placeholder="CLQ-SHIRT-001"
                                             error={!!errors.productCode}
                                             helperText={errors.productCode?.message}
                                             sx={fieldSx}
                                             {...register("productCode", {
-                                                required: "Không được để trống",
+                                                required: "Vui lòng nhập mã sản phẩm",
                                             })}
                                         />
 
                                         <FormControl fullWidth sx={fieldSx}>
-                                            <InputLabel id="category-select-label">Danh mục</InputLabel>
+                                            <InputLabel id="category-select-label">Danh muc</InputLabel>
                                             <Select
                                                 labelId="category-select-label"
                                                 value={selectedCategoryId}
-                                                label="Danh mục"
+                                                label="Danh muc"
                                                 onChange={(event) => setSelectedCategoryId(event.target.value)}
                                             >
                                                 {categories.map((cat) => (
@@ -326,14 +329,14 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                     <TextField
                                         fullWidth
                                         multiline
-                                        minRows={7}
-                                        label="Mô tả"
-                                        placeholder="Mô tả chất liệu, dáng vẻ, điểm nổi bật và cách sử dụng sản phẩm."
+                                        minRows={5}
+                                        label="Mo ta"
+                                        placeholder="Mo ta chat lieu, dang ve, diem noi bat va cach su dung san pham."
                                         error={!!errors.description}
                                         helperText={errors.description?.message}
                                         sx={fieldSx}
                                         {...register("description", {
-                                            required: "Không được để trống",
+                                            required: "Vui lòng nhập mô tả",
                                         })}
                                     />
                                 </Stack>
@@ -341,17 +344,55 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                         </Paper>
 
                         <Paper elevation={0} sx={{ ...sectionCardSx, flex: 1 }}>
-                            <SectionHeader icon={<FiTag size={18} />} title="Tồn kho và giá bán" />
+                            <SectionHeader icon={<FiTag size={18} />} title="Ton kho va gia ban" />
                             <Divider />
-                            <Box sx={{ p: { xs: 2.5, md: 3 }, flex: 1, display: "flex", alignItems: "center" }}>
+                            <Box sx={{ p: { xs: 2, md: 2.25 }, flex: 1, display: "flex", alignItems: "center" }}>
                                 <Box
                                     sx={{
                                         width: "100%",
                                         display: "grid",
-                                        gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                                        gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
                                         gap: 2,
                                     }}
                                 >
+
+
+                                    <TextField
+                                        fullWidth
+                                        label="Sale price"
+                                        type="number"
+                                        placeholder="199000"
+                                        error={!!errors.salePrice}
+                                        helperText={errors.salePrice?.message}
+                                        sx={fieldSx}
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start">VND</InputAdornment>,
+                                        }}
+                                        {...register("salePrice", {
+                                            required: "Vui lòng nhập giá bán",
+                                            min: {
+                                                value: 1,
+                                                message: "Giá phải lớn hơn 0",
+                                            },
+                                        })}
+                                    />
+
+                                    <TextField
+                                        fullWidth
+                                        label="Cost price"
+                                        type="number"
+                                        placeholder="120000"
+                                        error={!!errors.costPrice}
+                                        helperText={errors.costPrice?.message}
+                                        sx={fieldSx}
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start">VND</InputAdornment>,
+                                        }}
+                                        {...register("costPrice", {
+                                            validate: (value) =>
+                                                value === "" || Number(value) >= 0 || "Giá vốn không được âm",
+                                        })}
+                                    />
                                     <TextField
                                         fullWidth
                                         label="Số lượng"
@@ -361,30 +402,10 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         helperText={errors.quantity?.message}
                                         sx={fieldSx}
                                         {...register("quantity", {
-                                            required: "Không được để trống",
+                                            required: "Vui lòng nhập số lượng",
                                             min: {
                                                 value: 1,
                                                 message: "Số lượng phải lớn hơn 0",
-                                            },
-                                        })}
-                                    />
-
-                                    <TextField
-                                        fullWidth
-                                        label="Giá bán"
-                                        type="number"
-                                        placeholder="199000"
-                                        error={!!errors.price}
-                                        helperText={errors.price?.message}
-                                        sx={fieldSx}
-                                        InputProps={{
-                                            startAdornment: <InputAdornment position="start">VND</InputAdornment>,
-                                        }}
-                                        {...register("price", {
-                                            required: "Không được để trống",
-                                            min: {
-                                                value: 1,
-                                                message: "Giá phải lớn hơn 0",
                                             },
                                         })}
                                     />
@@ -401,10 +422,10 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                             endAdornment: <InputAdornment position="end">%</InputAdornment>,
                                         }}
                                         {...register("discount", {
-                                            required: "Không được để trống",
+                                            required: "Vui lòng nhập mức khuyến mãi",
                                             min: {
                                                 value: 0,
-                                                message: "Không được âm",
+                                                message: "Mức khuyến mãi không được âm",
                                             },
                                         })}
                                     />
@@ -418,17 +439,17 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                             <SectionHeader
                                 icon={<FiImage size={18} />}
                                 title="Ảnh sản phẩm"
-                                description="Chọn ảnh rõ, dễ nhìn."
+                                description="Chọn ảnh rõ, để nhìn."
                             />
                             <Divider />
-                            <Box sx={{ p: { xs: 2.5, md: 3 }, flex: 1 }}>
+                            <Box sx={{ p: { xs: 2, md: 2.25 }, flex: 1 }}>
                                 <Box
                                     sx={{
                                         display: "grid",
                                         gridTemplateColumns: { xs: "1fr", sm: "1.1fr 0.9fr" },
                                         gap: 2,
                                         alignItems: "stretch",
-                                        minHeight: { xs: 320, md: 360 },
+                                        minHeight: { xs: 240, md: 280 },
                                     }}
                                 >
                                     <Box
@@ -447,7 +468,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                             color: "#475569",
                                             cursor: "pointer",
                                             textAlign: "center",
-                                            px: 3,
+                                            px: 2.5,
                                             transition: "all 0.2s ease",
                                             "&:hover": {
                                                 borderColor: "#64748b",
@@ -457,9 +478,9 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         }}
                                     >
                                         <FiUploadCloud size={28} />
-                                        <Typography sx={{ fontWeight: 700 }}>Click để tải ảnh lên</Typography>
+                                        <Typography sx={{ fontWeight: 700 }}>Click de tai anh len</Typography>
                                         <Typography sx={{ fontSize: "0.92rem", color: "#64748b" }}>
-                                            JPG, PNG hoac WEBP. Kích thước tối đa 5MB.
+                                            JPG, PNG hoac WEBP. Kich thuoc toi da 5MB.
                                         </Typography>
                                         <input hidden type="file" accept="image/*" onChange={handleImageChange} />
                                     </Box>
@@ -493,7 +514,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                                 <FiImage size={30} />
                                                 <Typography sx={{ fontWeight: 700 }}>Preview image</Typography>
                                                 <Typography sx={{ fontSize: "0.9rem", textAlign: "center" }}>
-                                                    Hình xem trước sẽ hiển thị tại đây sau khi bạn tải ảnh lên.
+                                                    Hinh xem truoc se hien thi tai day sau khi ban tai anh len.
                                                 </Typography>
                                             </Stack>
                                         )}
@@ -508,7 +529,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                 spacing={1.5}
                                 justifyContent="flex-end"
                                 alignItems="center"
-                                sx={{ p: { xs: 2.5, md: 3 } }}
+                                sx={{ p: { xs: 2, md: 2.25 } }}
                             >
                                 <Button
                                     type="button"
@@ -525,7 +546,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         },
                                     }}
                                 >
-                                    Hủy
+                                    Huy
                                 </Button>
                                 <Button
                                     type="submit"
@@ -540,7 +561,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         },
                                     }}
                                 >
-                                    {isSubmitting ? "Đang thêm..." : "Thêm sản phẩm"}
+                                    {isSubmitting ? "Dang them..." : "Them san pham"}
                                 </Button>
                             </Stack>
                         </Paper>

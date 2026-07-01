@@ -2,7 +2,7 @@ import api from "./api";
 import { getAuthToken } from "../utils/auth";
 
 export const getOrdersApi = async () => {
-    const { data } = await api.get("/user/order");
+    const { data } = await api.get("orders/user");
     return data;
 };
 
@@ -12,7 +12,7 @@ export const getUserOrdersApi = async ({
     sortBy = "orderId",
     sortDir = "desc",
 }) => {
-    const { data } = await api.get("/user/order", {
+    const { data } = await api.get("orders/user", {
         params: {
             page,
             size,

@@ -61,3 +61,8 @@ export const searchCategoriesApi = async (keyword = "") => {
     const { data } = await api.get(endpoint);
     return data;
 };
+
+export const deleteProductApi = async (productId) => {
+    const { data } = await api.delete(`/admin/products/${productId}`);
+    return data;
+}

@@ -124,13 +124,7 @@ export default function AdminSidebar() {
     const theme = useTheme();
     const location = useLocation();
     const [open, setOpen] = React.useState(true);
-    const [auth] = React.useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem('auth') || '{}');
-        } catch {
-            return {};
-        }
-    });
+
 
     const [openMenus, setOpenMenus] = React.useState({});
 

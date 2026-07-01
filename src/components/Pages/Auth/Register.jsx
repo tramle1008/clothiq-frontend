@@ -12,53 +12,6 @@ const Register = () => {
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
     const navigate = useNavigate();
     const googleLoginUrl = `${import.meta.env.VITE_BACK_END_URL}/oauth2/authorize/google`;
-    const [provinces, setProvinces] = useState([]);
-    const [wards, setWards] = useState([]);
-    const [loadingProvinces, setLoadingProvinces] = useState(false);
-    const [loadingWards, setLoadingWards] = useState(false);
-    const selectedProvinceId = watch("provinceId");
-
-    useEffect(() => {
-        const loadProvinces = async () => {
-            try {
-                setLoadingProvinces(true);
-                const data = await getProvincesApi();
-                setProvinces(Array.isArray(data) ? data : []);
-            } catch (error) {
-                toast.error("Khong the tai danh sach tinh/thanh pho");
-                console.error(error);
-            } finally {
-                setLoadingProvinces(false);
-            }
-        };
-
-        loadProvinces();
-    }, []);
-
-    useEffect(() => {
-        const loadWards = async () => {
-            if (!selectedProvinceId) {
-                setWards([]);
-                setValue("wardId", "");
-                return;
-            }
-
-            try {
-                setLoadingWards(true);
-                setValue("wardId", "");
-                const data = await getWardsByProvinceApi(selectedProvinceId);
-                setWards(Array.isArray(data) ? data : []);
-            } catch (error) {
-                toast.error("Khong the tai danh sach phuong/xa");
-                console.error(error);
-            } finally {
-                setLoadingWards(false);
-            }
-        };
-
-        loadWards();
-    }, [selectedProvinceId, setValue]);
-
     const handleRegister = async (data) => {
         try {
             await registerApi({
@@ -85,7 +38,7 @@ const Register = () => {
                 null;
 
             if (!accessToken) {
-                toast.error("Khong the lay token sau khi dang ky");
+                toast.error("Không thể xác thực đăng ký. Vui lòng thử lại sau.");
                 return;
             }
 
@@ -95,15 +48,12 @@ const Register = () => {
                 role: loginResponse?.role || loginResponse?.roles,
             });
             persistAuthSession(auth);
-
-
-
-            toast.success("Dang ky va them dia chi thanh cong!");
+            toast.success("Đăng ký thành công!");
             navigate("/login");
         } catch (error) {
-            const message = error.response?.data?.message || "Co loi xay ra!";
+            const message = error.response?.data?.message || "Có lỗi xảy ra!";
             toast.error(message);
-            console.error("Loi dang ky:", error);
+            console.error(" lỗi đăng ký:", error);
         }
     };
 
@@ -112,23 +62,20 @@ const Register = () => {
             <div className="grid lg:grid-cols-[0.95fr_1.35fr]">
                 <div className="bg-gradient-to-br from-[#8c4a0f] via-[#c57a2a] to-[#f1c27d] px-8 py-10 text-white">
                     <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-100">Clothiq</p>
-                    <h2 className="mt-4 text-3xl font-bold leading-tight">Tao tai khoan moi</h2>
+                    <h2 className="mt-4 text-3xl font-bold leading-tight">Tài khoản mới</h2>
                     <p className="mt-4 text-sm leading-6 text-amber-50/90">
-                        Dien thong tin co ban va dia chi giao hang de bat dau mua sam nhanh hon.
+                        Điền thông tin cơ bản và địa chỉ giao hàng để bắt đầu mua sắm nhanh hơn.
                     </p>
 
                     <div className="mt-8 space-y-4 rounded-2xl bg-white/15 p-5 backdrop-blur-sm">
                         <div>
-                            <p className="text-sm font-semibold">Dang ky thuong</p>
-                            <p className="mt-1 text-sm text-amber-50/85">
-                                Phu hop khi ban muon nhap day du thong tin ngay tu dau.
-                            </p>
+                            <p className="text-sm font-semibold">Đăng ký thường</p>
                         </div>
                         <div className="h-px bg-white/20" />
                         <a href={googleLoginUrl} className="block rounded-xl transition hover:bg-white/10">
-                            <p className="text-sm font-semibold">Dang nhap Google</p>
+                            <p className="text-sm font-semibold">Đăng nhập Google</p>
                             <p className="mt-1 text-sm text-amber-50/85">
-                                Ban co the dung Google de vao nhanh.
+                                Bạn có thể sử dụng Google để đăng nhập nhanh.
                             </p>
                         </a>
                     </div>
@@ -137,42 +84,42 @@ const Register = () => {
                 <div className="bg-[#ead7c0] px-6 py-8 sm:px-8 lg:px-10">
                     <form onSubmit={handleSubmit(handleRegister)} className="space-y-6">
                         <div>
-                            <h3 className="text-2xl font-bold text-slate-800">Dang ky</h3>
+                            <h3 className="text-2xl font-bold text-slate-800">Đăng ký</h3>
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <InputField
-                                label="Ten nguoi dung"
+                                label="Tên người dùng"
                                 id="username"
                                 type="text"
-                                placeholder="Nhap ten"
+                                placeholder="Nhập tên"
                                 register={register}
                                 errors={errors}
                                 required
-                                message="Khong duoc de trong"
+                                message="Không được để trống"
                             />
 
                             <InputField
                                 label="Email"
                                 id="email"
                                 type="email"
-                                placeholder="Nhap email"
+                                placeholder="Nhập email"
                                 register={register}
                                 errors={errors}
                                 required
-                                message="Khong duoc de trong"
+                                message="Không được để trống"
                             />
 
                             <div className="md:col-span-2">
                                 <InputField
-                                    label="Mat khau"
+                                    label="Mật khẩu"
                                     id="password"
                                     type="password"
-                                    placeholder="Nhap mat khau"
+                                    placeholder="Nhập mật khẩu"
                                     register={register}
                                     errors={errors}
                                     required
-                                    message="Khong duoc de trong"
+                                    message="Không được để trống"
                                     min={8}
                                 />
                             </div>

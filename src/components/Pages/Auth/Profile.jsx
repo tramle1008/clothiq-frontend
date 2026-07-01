@@ -67,8 +67,8 @@ const Profile = () => {
             toast.success("Cap nhat thanh cong");
             setAddresses((prev) => prev.filter((addr) => addr.addressId !== addressId));
         } catch (err) {
-            console.error("Loi khi xoa dia chi:", err);
-            toast.error("Ban khong the xoa tat ca dia chi");
+            console.error("Lỗi khi xóa địa chỉ:", err);
+            toast.error("Bạn không thể xóa tất cả địa chỉ");
         }
     };
 
@@ -82,15 +82,15 @@ const Profile = () => {
 
     return (
         <div className="mx-auto my-16 max-w-4xl rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-center text-2xl font-bold">Ho so nguoi dung</h2>
+            <h2 className="mb-4 text-center text-2xl font-bold">Hồ sơ người dùng</h2>
             <ul className="mb-6 space-y-2">
-                <li><strong>Ten dang nhap:</strong> {user?.username || auth?.userName || auth?.username}</li>
+                <li><strong>Tên đăng nhập:</strong> {user?.username || auth?.userName || auth?.username}</li>
                 <li><strong>Email:</strong> {user?.email || auth?.email}</li>
             </ul>
 
             {Array.isArray(addresses) && addresses.length > 0 && (
                 <>
-                    <h3 className="mb-4 mt-8 text-xl font-semibold">Dia chi giao hang</h3>
+                    <h3 className="mb-4 mt-8 text-xl font-semibold">Địa chỉ giao hàng</h3>
                     <ul className="mb-6 space-y-2">
                         {addresses.map((addr) => (
                             <li key={addr.addressId} className="flex items-start justify-between rounded border bg-gray-50 p-3">
@@ -114,11 +114,11 @@ const Profile = () => {
                     onClick={() => setShowAddressModal(true)}
                     className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-blue-100"
                 >
-                    + Them dia chi
+                    + Thêm địa chỉ
                 </button>
                 <Link to="/user/update/password">
                     <button className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-amber-100">
-                        Doi mat khau
+                        Đổi mật khẩu
                     </button>
                 </Link>
             </div>

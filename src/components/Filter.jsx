@@ -101,7 +101,7 @@ const Filter = () => {
                     >
                         <MenuItem value="all">All</MenuItem>
                         {categories.map((i) => (
-                            <MenuItem key={i.categoryID} value={i.categoryID.toString()}>
+                            <MenuItem key={i.categoryId} value={i.categoryId.toString()}>
                                 {i.categoryName}
                             </MenuItem>
                         ))}

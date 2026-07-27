@@ -11,6 +11,7 @@ import AlertModel from "../../../AlerModel/AlertModel";
 import PaginationRounded from "../../../PaginationRounded";
 import AddProductForm from "./AddProductForm";
 import ProductUpdateDrawer from "./ProductUpdateDrawer";
+import toast from "react-hot-toast";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 15];
 
@@ -28,7 +29,9 @@ const AdminProductList = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get("page")) || 1;
     const searchKey = searchParams.get("key") || "";
-    const categoryId = searchParams.get("categoryId") || "";
+    const rawCategoryId = searchParams.get("categoryId");
+    const categoryId =
+        rawCategoryId && rawCategoryId !== "undefined" ? rawCategoryId : "";
     const pageSizeParam = Number(searchParams.get("pageSize"));
     const pageSize = PAGE_SIZE_OPTIONS.includes(pageSizeParam) ? pageSizeParam : 5;
     const [searchTerm, setSearchTerm] = useState(searchKey);
@@ -103,7 +106,7 @@ const AdminProductList = () => {
         const nextCategoryId = event.target.value;
         const nextParams = new URLSearchParams(searchParams);
 
-        if (nextCategoryId) {
+        if (nextCategoryId && nextCategoryId !== "all") {
             nextParams.set("categoryId", nextCategoryId);
         } else {
             nextParams.delete("categoryId");
@@ -124,7 +127,8 @@ const AdminProductList = () => {
             setDeletingProduct(null);
             loadProducts();
         } catch (error) {
-            console.error("Loi khi xoa san pham:", error);
+            console.error(" lỗi khi xóa sản phẩm:", error);
+            toast.error("Có lỗi xảy ra khi xóa sản phẩm.");
         } finally {
             setIsDeleting(false);
         }
@@ -185,15 +189,15 @@ const AdminProductList = () => {
                     </div>
                     <div className="w-full xl:w-[320px]">
                         <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                            <span className="shrink-0 text-sm font-medium text-slate-600">Loai san pham</span>
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Loại sản phẩm</span>
                             <select
                                 value={categoryId}
                                 onChange={handleCategoryChange}
                                 className="w-full bg-transparent text-sm text-slate-800 outline-none"
                             >
-                                <option value="">Tat ca danh muc</option>
+                                <option value="">Tất cả danh mục</option>
                                 {categories.map((category) => (
-                                    <option key={category.categoryID} value={String(category.categoryID)}>
+                                    <option key={category.categoryId} value={String(category.categoryId)}>
                                         {category.categoryName}
                                     </option>
                                 ))}
@@ -315,7 +319,7 @@ const AdminProductList = () => {
                 <div className="mb-4 flex justify-end xl:absolute xl:right-0 xl:top-1/2 xl:z-10 xl:mb-0 xl:-translate-y-1/2">
                     <div className="flex flex-col items-start gap-3 xl:items-end">
                         <label className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
-                            <span>Hien thi</span>
+                            <span>Hiển thị</span>
                             <select
                                 value={pageSize}
                                 onChange={handlePageSizeChange}
@@ -327,7 +331,7 @@ const AdminProductList = () => {
                                     </option>
                                 ))}
                             </select>
-                            <span>san pham / trang</span>
+                            <span> sản phẩm / trang</span>
                         </label>
                     </div>
                 </div>
@@ -358,10 +362,10 @@ const AdminProductList = () => {
 
             <AlertModel
                 open={Boolean(deletingProduct)}
-                title="Xoa san pham"
-                message={`Ban co chac chan muon xoa ${deletingProduct?.productName || "san pham nay"} khong? Hanh dong nay khong the hoan tac.`}
-                confirmText="Xoa san pham"
-                cancelText="Huy"
+                title="Xóa sản phẩm"
+                message={`Bạn có chắc chắn muốn xóa ${deletingProduct?.productName || "sản phẩm này"} không?`}
+                confirmText="Xóa sản phẩm"
+                cancelText="Hủy"
                 tone="danger"
                 loading={isDeleting}
                 onClose={() => {

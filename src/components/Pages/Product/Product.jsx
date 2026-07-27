@@ -18,7 +18,7 @@ const Product = () => {
     useProductFilter();
 
     const categoryFilterList = (categories || []).map((category) => ({
-        value: category.categoryID,
+        value: category.categoryId,
         label: category.categoryName,
     }));
 
@@ -29,8 +29,9 @@ const Product = () => {
                     filterLabel="Category"
                     filterParam="categoryId"
                     filterList={categoryFilterList}
-                    searchEnabled={true}
+                    searchEnabled={false}
                     sortEnabled={true}
+                    priceEnabled={true}
                 />
 
                 <section className="pt-10">
@@ -51,7 +52,7 @@ const Product = () => {
                         </>
                     ) : (
                         <div className="flex min-h-[220px] items-center justify-center rounded-2xl bg-white/70 px-6 text-center text-slate-700 shadow-sm">
-                            Khong tim thay san pham phu hop.
+                            Không tìm thấy sản phẩm phù hợp
                         </div>
                     )}
                 </section>

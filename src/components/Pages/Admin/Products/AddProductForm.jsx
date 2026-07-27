@@ -193,7 +193,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
             toast.success("Đã thêm sản phẩm thành công.");
             reset();
             setImageFile(null);
-            setSelectedCategoryId(categories[0]?.categoryID ? String(categories[0].categoryID) : "");
+            setSelectedCategoryId(categories[0]?.categoryId ? String(categories[0].categoryId) : "");
             onSuccess?.();
             onClose?.();
         } catch (err) {
@@ -310,15 +310,15 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         />
 
                                         <FormControl fullWidth sx={fieldSx}>
-                                            <InputLabel id="category-select-label">Danh muc</InputLabel>
+                                            <InputLabel id="category-select-label">Danh mục</InputLabel>
                                             <Select
                                                 labelId="category-select-label"
                                                 value={selectedCategoryId}
-                                                label="Danh muc"
+                                                label="Danh mục"
                                                 onChange={(event) => setSelectedCategoryId(event.target.value)}
                                             >
                                                 {categories.map((cat) => (
-                                                    <MenuItem key={cat.categoryID} value={String(cat.categoryID)}>
+                                                    <MenuItem key={cat.categoryId} value={String(cat.categoryId)}>
                                                         {cat.categoryName}
                                                     </MenuItem>
                                                 ))}
@@ -330,8 +330,8 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         fullWidth
                                         multiline
                                         minRows={5}
-                                        label="Mo ta"
-                                        placeholder="Mo ta chat lieu, dang ve, diem noi bat va cach su dung san pham."
+                                        label="Mô tả"
+                                        placeholder="Mô tả chất liệu, dáng vẻ, điểm nổi bật và cách sử dụng sản phẩm."
                                         error={!!errors.description}
                                         helperText={errors.description?.message}
                                         sx={fieldSx}
@@ -480,7 +480,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         <FiUploadCloud size={28} />
                                         <Typography sx={{ fontWeight: 700 }}>Click de tai anh len</Typography>
                                         <Typography sx={{ fontSize: "0.92rem", color: "#64748b" }}>
-                                            JPG, PNG hoac WEBP. Kich thuoc toi da 5MB.
+                                            JPG, PNG hoặc WEBP. Kích thước tối đa 5MB.
                                         </Typography>
                                         <input hidden type="file" accept="image/*" onChange={handleImageChange} />
                                     </Box>
@@ -514,7 +514,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                                 <FiImage size={30} />
                                                 <Typography sx={{ fontWeight: 700 }}>Preview image</Typography>
                                                 <Typography sx={{ fontSize: "0.9rem", textAlign: "center" }}>
-                                                    Hinh xem truoc se hien thi tai day sau khi ban tai anh len.
+                                                    Hình xem trước sẽ hiển thị tại đây sau khi bạn tải ảnh lên.
                                                 </Typography>
                                             </Stack>
                                         )}
@@ -546,7 +546,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         },
                                     }}
                                 >
-                                    Huy
+                                    Hủy
                                 </Button>
                                 <Button
                                     type="submit"
@@ -561,7 +561,7 @@ const AddProductForm = ({ onClose, onSuccess }) => {
                                         },
                                     }}
                                 >
-                                    {isSubmitting ? "Dang them..." : "Them san pham"}
+                                    {isSubmitting ? "Đang thêm..." : "Thêm sản phẩm"}
                                 </Button>
                             </Stack>
                         </Paper>

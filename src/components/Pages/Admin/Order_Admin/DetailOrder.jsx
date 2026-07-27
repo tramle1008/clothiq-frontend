@@ -9,9 +9,9 @@ import {
 } from "react-icons/fi";
 import { useSearchParams } from "react-router-dom";
 
-import PaginationRounded from "../../PaginationRounded";
-import api from "../../../api/api";
-import { getAuthToken } from "../../../utils/auth";
+import PaginationRounded from "../../../PaginationRounded";
+import api from "../../../../api/api";
+import { getAuthToken } from "../../../../utils/auth";
 import DetailOrderDetailsDrawer from "./DetailOrderDetailsDrawer";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 15];
@@ -26,21 +26,21 @@ const SORT_FIELDS = {
 };
 
 const DELIVERY_STATUS_OPTIONS = [
-    { value: "", label: "Tat ca trang thai giao hang" },
-    { value: "PENDING", label: "PENDING" },
-    { value: "SHIPPED", label: "SHIPPED" },
-    { value: "DELIVERED", label: "DELIVERED" },
-    { value: "REJECTED", label: "REJECTED" },
+    { value: "", label: "Tất cả trạng thái giao hàng" },
+    { value: "PENDING", label: "Chờ xác nhận" },
+    { value: "SHIPPED", label: "Chờ giao" },
+    { value: "DELIVERED", label: "Đã giao" },
+    { value: "REJECTED", label: "Đã hủy" },
 ];
 
 const PAYMENT_STATUS_OPTIONS = [
-    { value: "", label: "Tat ca trang thai thanh toan" },
-    { value: "PAID", label: "PAID" },
-    { value: "UNPAID", label: "UNPAID" }
+    { value: "", label: "Tất cả trạng thái thanh toán" },
+    { value: "PAID", label: "Đã thanh toán" },
+    { value: "UNPAID", label: "Chưa thanh toán" }
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-    { value: "", label: "Tat ca phuong thuc" },
+    { value: "", label: "Tất cả phương thức" },
     { value: "COD", label: "COD" },
     { value: "QR", label: "QR" },
 ];
@@ -105,7 +105,7 @@ const buildAddress = (address) => {
     }
 
     return (
-        [address.detail, address.ward, address.district, address.province]
+        [address.detail, address.wardName, address.provinceName]
             .filter(Boolean)
             .join(", ") || "--"
     );
@@ -315,7 +315,7 @@ const DetailOrder = () => {
         return (
             <div className="flex min-h-screen flex-1 flex-col p-6 pt-[88px]">
                 <div className="rounded bg-white py-10 text-center text-slate-500 shadow">
-                    Dang tai du lieu...
+                    Đang tải dữ liệu...
                 </div>
             </div>
         );
@@ -334,105 +334,107 @@ const DetailOrder = () => {
     return (
         <div className="flex min-h-screen flex-1 flex-col p-6 pt-[88px]">
             <div>
-                <div className="mb-4 mt-2 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="mb-4 mt-2 gap-4 bg-white rounded-md shadow">
                     <div>
-                        <h1 className="text-2xl font-semibold text-slate-800">Chi tiet don hang</h1>
+                        <h1 className="text-2xl font-semibold text-slate-800 px-4 pt-2 ">Tất cả đơn hàng</h1>
                     </div>
-                </div>
 
-                <div className="mb-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
-                    <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500 xl:col-span-2">
-                        <button
-                            type="button"
-                            onClick={handleSearch}
-                            className="shrink-0 text-lg text-slate-500 transition hover:text-emerald-600"
-                            aria-label="Tim kiem don hang"
-                        >
-                            <FiSearch />
-                        </button>
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(event) => setSearchTerm(event.target.value)}
-                            onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                    handleSearch();
-                                }
-                            }}
-                            placeholder="Tim ma don, ten khach hang"
-                            className="w-full bg-transparent text-sm text-slate-800 outline-none"
-                        />
-                        {searchTerm && (
+
+                    <div className="mb-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4 bg-white p-4 rounded-md">
+
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus-within:border-emerald-500 xl:col-span-2">
                             <button
                                 type="button"
-                                onClick={handleClearSearch}
-                                className="text-slate-400 transition hover:text-slate-700"
-                                aria-label="Xoa tim kiem"
+                                onClick={handleSearch}
+                                className="shrink-0 text-lg text-slate-500 transition hover:text-emerald-600"
+                                aria-label="Tìm kiếm đơn hàng"
                             >
-                                <FiX />
+                                <FiSearch />
                             </button>
-                        )}
-                    </label>
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        handleSearch();
+                                    }
+                                }}
+                                placeholder="Tìm mã đơn, tên khách hàng..."
+                                className="w-full bg-transparent text-sm text-slate-800 outline-none"
+                            />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    className="text-slate-400 transition hover:text-slate-700"
+                                    aria-label="Xóa tìm kiếm"
+                                >
+                                    <FiX />
+                                </button>
+                            )}
+                        </label>
 
-                    <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                        <span className="shrink-0 text-sm font-medium text-slate-600">Giao hang</span>
-                        <select
-                            value={deliveryStatus}
-                            onChange={(event) =>
-                                handleFilterChange("deliveryStatus", event.target.value)
-                            }
-                            className="w-full bg-transparent text-sm text-slate-800 outline-none"
-                        >
-                            {DELIVERY_STATUS_OPTIONS.map((option) => (
-                                <option key={option.value || "all-delivery"} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Giao hàng</span>
+                            <select
+                                value={deliveryStatus}
+                                onChange={(event) =>
+                                    handleFilterChange("deliveryStatus", event.target.value)
+                                }
+                                className="w-full bg-transparent text-sm text-slate-800 outline-none"
+                            >
+                                {DELIVERY_STATUS_OPTIONS.map((option) => (
+                                    <option key={option.value || "all-delivery"} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
 
-                    <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                        <span className="shrink-0 text-sm font-medium text-slate-600">Thanh toan</span>
-                        <select
-                            value={paymentStatus}
-                            onChange={(event) =>
-                                handleFilterChange("paymentStatus", event.target.value)
-                            }
-                            className="w-full bg-transparent text-sm text-slate-800 outline-none"
-                        >
-                            {PAYMENT_STATUS_OPTIONS.map((option) => (
-                                <option key={option.value || "all-payment"} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Thanh toán</span>
+                            <select
+                                value={paymentStatus}
+                                onChange={(event) =>
+                                    handleFilterChange("paymentStatus", event.target.value)
+                                }
+                                className="w-full bg-transparent text-sm text-slate-800 outline-none"
+                            >
+                                {PAYMENT_STATUS_OPTIONS.map((option) => (
+                                    <option key={option.value || "all-payment"} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
 
-                    <div className="flex items-center justify-start gap-2 xl:col-span-2">
-                        <button
-                            type="button"
-                            onClick={() => setShowAdvancedFilters((prev) => !prev)}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-                        >
-                            {showAdvancedFilters ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
-                            Tim kiem nang cao
-                        </button>
+                        <div className="flex items-center justify-start gap-2 xl:col-span-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvancedFilters((prev) => !prev)}
+                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                            >
+                                {showAdvancedFilters ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+                                Tìm kiếm nâng cao
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={handleResetFilters}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-                        >
-                            <FiRotateCcw size={14} />
-                            Reset
-                        </button>
+                            <button
+                                type="button"
+                                onClick={handleResetFilters}
+                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                            >
+                                <FiRotateCcw size={14} />
+                                Reset
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {showAdvancedFilters && (
                     <div className="mb-5 grid gap-3 lg:grid-cols-3">
                         <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                            <span className="shrink-0 text-sm font-medium text-slate-600">Phuong thuc</span>
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Phương thức</span>
                             <select
                                 value={paymentMethod}
                                 onChange={(event) =>
@@ -449,7 +451,7 @@ const DetailOrder = () => {
                         </label>
 
                         <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                            <span className="shrink-0 text-sm font-medium text-slate-600">Tu ngay</span>
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Từ ngày</span>
                             <input
                                 type="date"
                                 value={fromDate}
@@ -459,7 +461,7 @@ const DetailOrder = () => {
                         </label>
 
                         <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                            <span className="shrink-0 text-sm font-medium text-slate-600">Den ngay</span>
+                            <span className="shrink-0 text-sm font-medium text-slate-600">Đến ngày</span>
                             <input
                                 type="date"
                                 value={toDate}
@@ -477,7 +479,7 @@ const DetailOrder = () => {
                                 <tr className="text-left text-sm font-semibold text-slate-700">
                                     <th className="px-4 py-3">
                                         <SortHeader
-                                            label="Ma don"
+                                            label="Mã đơn"
                                             field={SORT_FIELDS.orderId}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
@@ -486,7 +488,7 @@ const DetailOrder = () => {
                                     </th>
                                     <th className="px-4 py-3">
                                         <SortHeader
-                                            label="Ho ten"
+                                            label="Họ tên"
                                             field={SORT_FIELDS.userName}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
@@ -495,7 +497,7 @@ const DetailOrder = () => {
                                     </th>
                                     <th className="px-4 py-3">
                                         <SortHeader
-                                            label="Trang thai giao"
+                                            label="Trạng thái giao"
                                             field={SORT_FIELDS.deliveryStatus}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
@@ -504,17 +506,17 @@ const DetailOrder = () => {
                                     </th>
                                     <th className="px-4 py-3">
                                         <SortHeader
-                                            label="Trang thai TT"
+                                            label="Trạng thái TT"
                                             field={SORT_FIELDS.paymentStatus}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
                                             onSort={handleSort}
                                         />
                                     </th>
-                                    <th className="px-4 py-3">Dia chi</th>
+                                    <th className="px-4 py-3">Địa chỉ</th>
                                     <th className="px-4 py-3 text-right">
                                         <SortHeader
-                                            label="So tien"
+                                            label="Số tiền"
                                             field={SORT_FIELDS.totalAmount}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
@@ -523,7 +525,7 @@ const DetailOrder = () => {
                                     </th>
                                     <th className="px-4 py-3">
                                         <SortHeader
-                                            label="Ngay dat"
+                                            label="Ngày đặt"
                                             field={SORT_FIELDS.dateOrder}
                                             activeSortBy={sortBy}
                                             activeSortOrder={sortOrder}
@@ -581,7 +583,7 @@ const DetailOrder = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
-                                            Khong co don hang nao.
+                                            Không có đơn hàng nào.
                                         </td>
                                     </tr>
                                 )}
@@ -591,7 +593,7 @@ const DetailOrder = () => {
                 </div>
 
                 <div className="mt-4 flex flex-col gap-3 rounded px-2 py-1 text-sm text-slate-600 shadow sm:flex-row sm:items-center sm:justify-between">
-                    <div>Tong so {totalElements}</div>
+                    <div>Tổng số {totalElements}</div>
                     <label className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
                         <select
                             value={pageSize}

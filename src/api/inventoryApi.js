@@ -1,5 +1,6 @@
 import api from "./api";
 
+// thêm sản phẩm mới vào danh mục
 export const addProductApi = async ({ categoryId, product, imageFile, token }) => {
     const formData = new FormData();
     formData.append("product", JSON.stringify(product));
@@ -44,10 +45,11 @@ export const getAllProductsApi = async () => {
     return data;
 };
 
+// lấy danh sách danh mục
 export const getCategoriesApi = async (queryString = "pageNumber=0&pageSize=10") => {
     const endpoint = queryString
-        ? `/public/categories?${queryString}`
-        : "/public/categories";
+        ? `/categories?${queryString}`
+        : "/categories";
 
     const { data } = await api.get(endpoint);
     return data;
@@ -55,8 +57,8 @@ export const getCategoriesApi = async (queryString = "pageNumber=0&pageSize=10")
 
 export const searchCategoriesApi = async (keyword = "") => {
     const endpoint = keyword.trim()
-        ? `/public/categories/search?keyword=${encodeURIComponent(keyword.trim())}`
-        : "/public/categories/search";
+        ? `/categories/search?keyword=${encodeURIComponent(keyword.trim())}`
+        : "/categories/search";
 
     const { data } = await api.get(endpoint);
     return data;
@@ -66,3 +68,19 @@ export const deleteProductApi = async (productId) => {
     const { data } = await api.delete(`/admin/products/${productId}`);
     return data;
 }
+
+
+export const addCategoryApi = async ({ category, token }) => {
+    const { data } = await api.post("/categories/categories", category);
+    return data;
+};
+
+export const updateCategoryApi = async ({ categoryId, category, token }) => {
+    const { data } = await api.put(`/categories/${categoryId}`, category);
+    return data;
+};
+
+export const deleteCategoryApi = async (categoryId, token) => {
+    const { data } = await api.delete(`/categories/${categoryId}`);
+    return data;
+};

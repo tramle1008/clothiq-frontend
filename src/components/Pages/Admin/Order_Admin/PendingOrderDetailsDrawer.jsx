@@ -24,9 +24,9 @@ const buildAddress = (address) =>
 const getOrderCodeLabel = (order) => order.code || `#${order.orderId}`;
 
 const getPaymentMethodLabel = (order) =>
-    order.paymentMethod || order.payment?.paymentMethod || "Chua co du lieu tu backend";
+    order.paymentMethod || order.payment?.paymentMethod || "Chưa có dữ liệu";
 
-const getCustomerNote = (order) => order.note || "Chua co du lieu tu backend";
+const getCustomerNote = (order) => order.note || "Chưa có dữ liệu";
 
 const getLineTotal = (item) => {
     const orderProductPrice = Number(item?.orderProductPrice || 0);
@@ -60,7 +60,7 @@ const PendingOrderDetailsDrawer = ({
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
                 <div>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        Chi tiet don hang
+                        Chi tiết đơn hàng
                     </Typography>
                     <Typography variant="body2" sx={{ color: "#64748b" }}>
                         {order ? getOrderCodeLabel(order) : ""}
@@ -76,34 +76,34 @@ const PendingOrderDetailsDrawer = ({
                     <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
                         <div className="rounded-md border border-slate-200 p-4">
                             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                                A. Thong tin don hang
+                                A. Thông tin đơn hàng
                             </Typography>
                             <div className="space-y-2 text-sm text-slate-700">
                                 <div><span className="font-semibold">Order ID:</span> {order.orderId}</div>
-                                <div><span className="font-semibold">Ngay dat:</span> {formatDate(order.dateOrder)}</div>
+                                <div><span className="font-semibold">Ngày đặt:</span> {formatDate(order.dateOrder)}</div>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-semibold">Status:</span>
+                                    <span className="font-semibold">Trạng thái:</span>
                                     <Chip label={order.deliveryStatus || "--"} size="small" color="warning" variant="outlined" />
                                 </div>
-                                <div><span className="font-semibold">Note khach hang:</span> {getCustomerNote(order)}</div>
+                                <div><span className="font-semibold">Ghi chú khách hàng:</span> {getCustomerNote(order)}</div>
                             </div>
                         </div>
 
                         <div className="rounded-md border border-slate-200 p-4">
                             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                                B. Thong tin khach
+                                B. Thông tin khách hàng
                             </Typography>
                             <div className="space-y-2 text-sm text-slate-700">
-                                <div><span className="font-semibold">Ten:</span> {order.userName || "--"}</div>
-                                <div><span className="font-semibold">SDT:</span> {order.address?.phoneNumber || "--"}</div>
+                                <div><span className="font-semibold">Tên:</span> {order.userName || "--"}</div>
+                                <div><span className="font-semibold">SĐT:</span> {order.address?.phoneNumber || "--"}</div>
                                 <div><span className="font-semibold">Email:</span> {order.email || "--"}</div>
-                                <div><span className="font-semibold">Dia chi giao hang:</span> {buildAddress(order.address)}</div>
+                                <div><span className="font-semibold">Địa chỉ giao hàng:</span> {buildAddress(order.address)}</div>
                             </div>
                         </div>
 
                         <div className="rounded-md border border-slate-200 p-4">
                             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                                C. Danh sach san pham - so tien
+                                C. Danh sách sản phẩm - số tiền
                             </Typography>
                             <div className="space-y-3">
                                 {(order.orderItemList || []).map((item) => (
@@ -122,10 +122,10 @@ const PendingOrderDetailsDrawer = ({
                                                     SL: {item.quantity} | Don gia: {formatCurrency(item.orderProductPrice)}
                                                 </div>
                                                 <div className="mt-1 text-sm text-slate-600">
-                                                    Discount: {Number(item.discount || 0)}%
+                                                    Khuyến mãi: {Number(item.discount || 0)}%
                                                 </div>
                                                 <div className="mt-2 text-sm font-semibold text-emerald-700">
-                                                    Thanh tien: {formatCurrency(getLineTotal(item))}
+                                                    Thành tiền: {formatCurrency(getLineTotal(item))}
                                                 </div>
                                             </div>
                                         </div>
@@ -133,7 +133,7 @@ const PendingOrderDetailsDrawer = ({
                                 ))}
                                 <Divider />
                                 <div className="flex items-center justify-between text-sm font-semibold text-slate-900">
-                                    <span>Tong don</span>
+                                    <span>Tổng đơn</span>
                                     <span>{formatCurrency(order.totalAmount)}</span>
                                 </div>
                             </div>
@@ -141,13 +141,13 @@ const PendingOrderDetailsDrawer = ({
 
                         <div className="rounded-md border border-slate-200 p-4">
                             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                                D. Thanh toan
+                                D. Thanh toán
                             </Typography>
                             <div className="space-y-2 text-sm text-slate-700">
-                                <div><span className="font-semibold">Phuong thuc:</span> {getPaymentMethodLabel(order)}</div>
-                                <div><span className="font-semibold">Cong thanh toan:</span> {order.payment?.pgName || "--"}</div>
-                                <div><span className="font-semibold">Ma giao dich:</span> {order.payment?.pgPaymentId || "--"}</div>
-                                <div><span className="font-semibold">Trang thai thanh toan:</span> {order.paymentStatus || "--"}</div>
+                                <div><span className="font-semibold">Phương thức:</span> {getPaymentMethodLabel(order)}</div>
+                                <div><span className="font-semibold">Tổng thanh toán:</span> {order.payment?.pgName || "--"}</div>
+                                <div><span className="font-semibold">Mã giao dịch:</span> {order.payment?.pgPaymentId || "--"}</div>
+                                <div><span className="font-semibold">Trạng thái thanh toán:</span> {order.paymentStatus || "--"}</div>
                             </div>
                         </div>
                     </div>

@@ -303,7 +303,7 @@ const ProductUpdateDrawer = ({ open, productId, onClose, onSuccess }) => {
                                         onChange={(event) => setSelectedCategoryId(event.target.value)}
                                     >
                                         {categories.map((category) => (
-                                            <MenuItem key={category.categoryID} value={String(category.categoryID)}>
+                                            <MenuItem key={category.categoryId} value={String(category.categoryId)}>
                                                 {category.categoryName}
                                             </MenuItem>
                                         ))}

@@ -238,7 +238,7 @@ const Dashboard = () => {
                 }}
             >
                 <StatCard label="Khách hàng" value={stats.totalUsers} />
-                <Link to="/admin/product">
+                <Link to="/admin/products">
                     <StatCard label="Sản phẩm" value={stats.totalProducts} />
                 </Link>
                 <Link to="/admin/orders">

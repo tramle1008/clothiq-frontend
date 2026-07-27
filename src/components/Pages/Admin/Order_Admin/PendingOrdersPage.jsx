@@ -78,7 +78,7 @@ const PendingOrdersPage = () => {
             setOrders(response.data?.content || []);
             setTotalPages(Number(response.data?.totalPages) || 0);
         } catch (err) {
-            setError("Khong the tai don hang pending.");
+            setError("Không thể tải đơn hàng.");
             console.error(err);
         } finally {
             setLoading(false);
@@ -132,7 +132,7 @@ const PendingOrdersPage = () => {
 
         const token = getAuthToken();
         if (!token) {
-            toast.error("Phien dang nhap da het han");
+            toast.error("Phiên đăng nhập đã hết hạn");
             return;
         }
 
@@ -154,12 +154,12 @@ const PendingOrdersPage = () => {
                 }
             );
 
-            toast.success(type === "ship" ? "Da chuyen sang trang thai SHIPPED" : "Da tu choi don hang");
+            toast.success(type === "ship" ? "Đã chuyển sang trạng thái SHIPPED" : "Đã từ chối đơn hàng");
             handleCloseDrawer();
             fetchPendingOrders();
         } catch (actionError) {
             console.error(actionError);
-            toast.error(type === "ship" ? "Khong the xac nhan giao hang" : "Khong the tu choi don hang");
+            toast.error(type === "ship" ? "Không thể xác nhận giao hàng" : "Không thể từ chối đơn hàng");
         } finally {
             setSubmittingAction("");
         }
@@ -179,13 +179,13 @@ const PendingOrdersPage = () => {
                 <div className="mb-6 flex flex-col gap-4 rounded-md  p-5 shadow">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <Typography variant="h5" sx={{ fontWeight: 700, color: "#334155" }}>
-                            Pending Orders
+                            Đơn chờ
                         </Typography>
                     </div>
 
                     <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_220px_220px]">
                         <label className="flex items-center gap-3 rounded-md border border-slate-300 bg-white px-4 py-3 shadow-sm focus-within:border-emerald-500">
-                            <FiSearch className="shrink-0 text-slate-500" />
+                            <FiSearch className="shrink-0 text-slate-500" onClick={handleSearch} />
                             <input
                                 type="text"
                                 value={draftKeyword}
@@ -195,20 +195,20 @@ const PendingOrdersPage = () => {
                                         handleSearch();
                                     }
                                 }}
-                                placeholder="Search..."
+                                placeholder="Tìm kiếm theo mã đơn, tên khách hàng,..."
                                 className="w-full bg-transparent text-sm text-slate-800 outline-none"
                             />
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={handleSearch}
                                 className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
                             >
                                 Search
-                            </button>
+                            </button> */}
                         </label>
 
                         <TextField
-                            label="Date from"
+                            label="Từ ngày"
                             type="date"
                             value={fromDate}
                             onChange={(event) => handleDateChange("fromDate", event.target.value)}
@@ -218,7 +218,7 @@ const PendingOrdersPage = () => {
                         />
 
                         <TextField
-                            label="Date to"
+                            label="Đến ngày"
                             type="date"
                             value={toDate}
                             onChange={(event) => handleDateChange("toDate", event.target.value)}
@@ -234,14 +234,14 @@ const PendingOrdersPage = () => {
                         <table className="min-w-full border-collapse">
                             <thead className="bg-slate-50">
                                 <tr className="text-left text-sm font-semibold text-slate-700">
-                                    <th className="px-4 py-3">Ma don</th>
-                                    <th className="px-4 py-3">Khach hang</th>
+                                    <th className="px-4 py-3">Mã đơn</th>
+                                    <th className="px-4 py-3">Khách hàng</th>
                                     <th className="px-4 py-3">SDT</th>
-                                    <th className="px-4 py-3 text-right">Tong tien</th>
-                                    <th className="px-4 py-3">Thanh toan</th>
-                                    <th className="px-4 py-3">Ngay dat</th>
-                                    <th className="px-4 py-3">Trang thai</th>
-                                    <th className="px-4 py-3 text-center">Action</th>
+                                    <th className="px-4 py-3 text-right">Tổng tiền</th>
+                                    <th className="px-4 py-3">Thanh toán</th>
+                                    <th className="px-4 py-3">Ngày đặt</th>
+                                    <th className="px-4 py-3">Trạng thái</th>
+                                    <th className="px-4 py-3 text-center">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -281,7 +281,7 @@ const PendingOrdersPage = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
-                                            Khong co don hang pending.
+                                            Không có đơn hàng nào chờ xử lý.
                                         </td>
                                     </tr>
                                 )}

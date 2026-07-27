@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 
 import AddProductToCart from "../Cart/AddProductToCart";
-import ProductView from "./ProductView";
+import { useDispatch } from "react-redux";
+import { fetchCart } from "../../../store/actions";
+
 
 const formatCurrency = (value) => `${Number(value || 0).toLocaleString()} vnđ`;
 
@@ -19,9 +22,10 @@ const ProductCard = ({
     categoryId,
     status,
 }) => {
-    const [openProductView, setOpenProductView] = useState(false);
-    const [selectedViewProduct, setSelectedViewProduct] = useState(null);
+    const navigate = useNavigate();
     const isAvailable = Number(quantity) > 0;
+
+    const dispatch = useDispatch();
 
     const discountPercent = Number(discount || 0);
     const finalPrice = useMemo(
@@ -29,32 +33,25 @@ const ProductCard = ({
         [salePrice, discountPercent]
     );
 
-    const handleProductViewModal = () => {
-        setSelectedViewProduct({
-            productId,
-            productCode,
-            productName,
-            image,
-            description,
-            quantity,
-            salePrice,
-            costPrice,
-            discount,
-            categoryId,
-            status,
-            price: salePrice,
-            specialPrice: finalPrice,
-        });
-        setOpenProductView(true);
+    const handleProductDetail = () => {
+        navigate(`/products/${productId}`);
     };
 
-    const addToCartHandle = async () => {
-        await AddProductToCart(productId, 1);
+    const addToCartHandle = async (event) => {
+        event.stopPropagation();
+        const result = await AddProductToCart(productId, 1);
+
+        if (result) {
+            dispatch(fetchCart());
+        }
     };
 
     return (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div onClick={handleProductViewModal} className="aspect-square w-full cursor-pointer overflow-hidden bg-slate-100">
+        <div
+            onClick={handleProductDetail}
+            className="cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+        >
+            <div className="aspect-square w-full overflow-hidden bg-slate-100">
                 <img
                     className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                     src={image}
@@ -74,7 +71,7 @@ const ProductCard = ({
                         {discountPercent > 0 ? (
                             <>
                                 <span className="inline-flex w-fit rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                                    Giam {discountPercent}%
+                                    Giảm {discountPercent}%
                                 </span>
                                 <span className="mt-2 text-xs text-slate-400 line-through">
                                     {formatCurrency(salePrice)}
@@ -97,17 +94,10 @@ const ProductCard = ({
                         onClick={addToCartHandle}
                     >
                         <FaShoppingCart className="mr-2" />
-                        {isAvailable ? "Them" : "Het hang"}
+                        {isAvailable ? "Thêm" : "Hết hàng"}
                     </button>
                 </div>
             </div>
-
-            <ProductView
-                open={openProductView}
-                setOpen={setOpenProductView}
-                product={selectedViewProduct}
-                isAvailable={isAvailable}
-            />
         </div>
     );
 };

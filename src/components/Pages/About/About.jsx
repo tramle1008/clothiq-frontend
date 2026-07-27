@@ -1,31 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FiExternalLink, FiMapPin, FiPhone } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { getStoresApi } from "../../../api/storeBranchApi";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStoreBranches } from "../../../store/actions";
 
 const About = () => {
-    const [stores, setStores] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
+    const {
+        stores = [],
+        loading = false,
+        error = null,
+    } = useSelector((state) => state.storeBranches || {});
 
     useEffect(() => {
-        const loadStores = async () => {
-            try {
-                const data = await getStoresApi();
-                setStores(Array.isArray(data) ? data : []);
-            } catch (error) {
-                const message = error?.response?.data?.message || "Không tải được danh sách cửa hàng.";
-                toast.error(message);
-            } finally {
-                setLoading(false);
-            }
-        };
+        dispatch(fetchStoreBranches());
+    }, [dispatch]);
 
-        loadStores();
-    }, []);
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        }
+    }, [error]);
 
     return (
         <section className="min-h-screen bg-stone-50 px-4 py-10 md:px-8">
-            <div className="mx-auto ">
+            <div className="mx-auto">
                 <div className="mb-8 rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-700 to-lime-600 px-6 py-10 text-white shadow-lg md:px-10">
                     <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-100">
                         Clothiq Store Locator

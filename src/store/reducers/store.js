@@ -9,6 +9,7 @@ import { orderReducer } from './orderReducer';
 import { adminOrderReducer } from './adminOrderReducer';
 import orderUserReducer from './orderUserReducer';
 import { getStoredAuth } from '../../utils/auth';
+import { storeBranchReducer } from './storeBranchReducer';
 
 
 const user = getStoredAuth() || [];
@@ -27,6 +28,7 @@ const store = configureStore({
         order: orderReducer,
         orderUser: orderUserReducer,
         adminOrders: adminOrderReducer,
+        storeBranches: storeBranchReducer,
     },
     preloadedState: initialState,
 });

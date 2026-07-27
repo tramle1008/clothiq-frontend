@@ -24,6 +24,7 @@ import {
     MdExpandLess,
     MdExpandMore,
     MdOutlineMenu,
+    MdOutlineSupport
 } from 'react-icons/md';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { FiMapPin } from 'react-icons/fi';
@@ -114,6 +115,11 @@ const navGroups = [
                     { label: 'Chờ xác nhận', to: '/admin/orders' },
                     { label: 'Danh sách đơn hàng', to: '/admin/detail' },
                 ],
+            },
+            {
+                label: 'Hỗ trợ khách hàng', icon: MdOutlineSupport, to: '/admin/tickets'
+
+
             },
             { label: 'Cơ sở', icon: FiMapPin, to: '/admin/about' },
         ],

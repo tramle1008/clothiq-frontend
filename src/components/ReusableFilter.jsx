@@ -10,11 +10,14 @@ const ReusableFilter = ({
     filterList = [],
     searchEnabled = true,
     sortEnabled = true,
+    priceEnabled = false,
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selected, setSelected] = useState("all");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchText, setSearchText] = useState("");
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
 
     // Sync URL params with state
     useEffect(() => {
@@ -24,8 +27,12 @@ const ReusableFilter = ({
 
         const sort = searchParams.get("sortOrder") || "asc";
         const key = searchParams.get("key") || "";
+        const currentMinPrice = searchParams.get("minPrice") || "";
+        const currentMaxPrice = searchParams.get("maxPrice") || "";
         setSortOrder(sort);
         setSearchText(key);
+        setMinPrice(currentMinPrice);
+        setMaxPrice(currentMaxPrice);
     }, [searchParams, filterParam]);
 
 
@@ -59,6 +66,25 @@ const ReusableFilter = ({
         } else {
             newParams.delete("key");
         }
+        newParams.set("page", "1");
+        setSearchParams(newParams);
+    };
+
+    const handlePriceSubmit = () => {
+        const newParams = new URLSearchParams(searchParams);
+
+        if (minPrice.trim()) {
+            newParams.set("minPrice", minPrice.trim());
+        } else {
+            newParams.delete("minPrice");
+        }
+
+        if (maxPrice.trim()) {
+            newParams.set("maxPrice", maxPrice.trim());
+        } else {
+            newParams.delete("maxPrice");
+        }
+
         newParams.set("page", "1");
         setSearchParams(newParams);
     };
@@ -112,6 +138,32 @@ const ReusableFilter = ({
                             ))}
                         </Select>
                     </FormControl>
+                )}
+
+                {priceEnabled && (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            min="0"
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                            onBlur={handlePriceSubmit}
+                            onKeyDown={(e) => e.key === "Enter" && handlePriceSubmit()}
+                            placeholder="Min"
+                            className="w-28 rounded-md border border-gray-400 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-500"
+                        />
+                        <span className="text-sm font-medium text-slate-700">-</span>
+                        <input
+                            type="number"
+                            min="0"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                            onBlur={handlePriceSubmit}
+                            onKeyDown={(e) => e.key === "Enter" && handlePriceSubmit()}
+                            placeholder="Max"
+                            className="w-28 rounded-md border border-gray-400 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-500"
+                        />
+                    </div>
                 )}
 
                 {sortEnabled && (

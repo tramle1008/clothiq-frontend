@@ -13,6 +13,8 @@ const useProductFilter = () => {
         const sortOrder = searchParams.get("sortOrder") || "asc";
         const categoryId = searchParams.get("categoryId");
         const key = searchParams.get("key");
+        const minPrice = searchParams.get("minPrice");
+        const maxPrice = searchParams.get("maxPrice");
 
         params.set("pageNumber", (currentPage - 1));
         params.set("sortBy", "productId");
@@ -23,6 +25,12 @@ const useProductFilter = () => {
         }
 
         if (key) params.set("key", key);
+        if (minPrice !== null && minPrice !== "") {
+            params.set("minPrice", minPrice);
+        }
+        if (maxPrice !== null && maxPrice !== "") {
+            params.set("maxPrice", maxPrice);
+        }
 
         const queryString = params.toString();
 

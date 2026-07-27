@@ -32,7 +32,7 @@ const ShippingAddress = ({ onNext, setAddressId }) => {
     return (
         <div className="flex justify-center">
             <Box className="mx-4 mb-10 w-full max-w-2xl">
-                <h1 className="text-center">Chon dia chi giao hang</h1>
+                <h1 className="text-center">Chọn địa chỉ giao hàng</h1>
                 {loading && <p>Dang tai dia chi...</p>}
                 {error && <p className="text-red-500">{error}</p>}
                 {addresses.length > 0 && (

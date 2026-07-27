@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { FiLink, FiMapPin, FiPlus, FiRotateCcw, FiSave, FiTrash2 } from "react-icons/fi";
+import { FiMapPin, FiPlus, FiRotateCcw, FiSave, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import {
-    createStoreApi,
-    deleteStoreApi,
-    getStoresApi,
-    updateStoreApi,
-} from "../../../api/storeBranchApi";
+    createStoreBranch,
+    deleteStoreBranch,
+    fetchStoreBranches,
+    replaceStoreBranches,
+    updateStoreBranch,
+} from "../../../store/actions";
+import { Typography } from "@mui/material";
 
 const createEmptyStore = (index) => ({
     id: `new-${Date.now()}-${index}`,
@@ -37,28 +40,35 @@ const extractGoogleMapsEmbedUrl = (value) => {
 const isPersistedStore = (id) => typeof id === "number";
 
 const AdminAbout = () => {
+    const dispatch = useDispatch();
+    const {
+        stores: storeBranches = [],
+        loading = false,
+        saving: storeSaving = false,
+        error = null,
+    } = useSelector((state) => state.storeBranches || {});
+
     const [stores, setStores] = useState([]);
     const [initialStores, setInitialStores] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const isSaving = saving || storeSaving;
 
     useEffect(() => {
-        const loadStores = async () => {
-            try {
-                const data = await getStoresApi();
-                const normalizedData = Array.isArray(data) ? data : [];
-                setStores(normalizedData);
-                setInitialStores(normalizedData);
-            } catch (error) {
-                const message = error?.response?.data?.message || "Không tải được danh sách cửa hàng.";
-                toast.error(message);
-            } finally {
-                setLoading(false);
-            }
-        };
+        dispatch(fetchStoreBranches());
+    }, [dispatch]);
 
-        loadStores();
-    }, []);
+    useEffect(() => {
+        if (!saving) {
+            setStores(storeBranches);
+            setInitialStores(storeBranches);
+        }
+    }, [saving, storeBranches]);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        }
+    }, [error]);
 
     const handleStoreChange = (id, field, value) => {
         const nextValue = field === "embedUrl" ? extractGoogleMapsEmbedUrl(value) : value;
@@ -84,12 +94,12 @@ const AdminAbout = () => {
         }
 
         try {
-            await deleteStoreApi(id);
+            await dispatch(deleteStoreBranch(id));
             setStores((prev) => prev.filter((store) => store.id !== id));
             setInitialStores((prev) => prev.filter((store) => store.id !== id));
             toast.success(`Đã xóa ${storeToDelete.branchName}.`);
-        } catch (error) {
-            const message = error?.response?.data?.message || "Không thể xóa cửa hàng.";
+        } catch (requestError) {
+            const message = requestError?.response?.data?.message || "Không thể xóa cửa hàng.";
             toast.error(message);
         }
     };
@@ -124,21 +134,21 @@ const AdminAbout = () => {
                     address: store.address.trim(),
                     mapUrl: store.mapUrl.trim(),
                     embedUrl: extractGoogleMapsEmbedUrl(store.embedUrl),
-
                 };
 
                 const savedStore = isPersistedStore(store.id)
-                    ? await updateStoreApi(store.id, payload)
-                    : await createStoreApi(payload);
+                    ? await dispatch(updateStoreBranch(store.id, payload))
+                    : await dispatch(createStoreBranch(payload));
 
                 savedStores.push(savedStore);
             }
 
+            dispatch(replaceStoreBranches(savedStores));
             setStores(savedStores);
             setInitialStores(savedStores);
             toast.success("Đã lưu danh sách cửa hàng.");
-        } catch (error) {
-            const message = error?.response?.data?.message || "Không thể lưu cửa hàng.";
+        } catch (requestError) {
+            const message = requestError?.response?.data?.message || "Không thể lưu cửa hàng.";
             toast.error(message);
         } finally {
             setSaving(false);
@@ -146,46 +156,20 @@ const AdminAbout = () => {
     };
 
     return (
-        <main className="min-h-screen flex-1 px-4 pb-8 pt-24 md:px-8 lg:px-10 bg-stone-100">
+        <main className="min-h-screen flex-1 bg-stone-100 px-4 pb-8 pt-24 md:px-8 lg:px-10">
             <div className="mx-auto max-w-[1500px]">
-                <section className="mb-8 rounded-[2rem] bg-gradient-to-r from-stone-900 via-stone-800 to-emerald-800 p-8 text-white shadow-xl md:p-10">
-                    <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-                        <div className="max-w-3xl">
-                            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200">
-                                Admin About
-                            </p>
-                            <h1 className="mt-3 text-3xl font-bold md:text-4xl">
-                                Quản lý hệ thống cửa hàng
-                            </h1>
-
+                <section className="mb-8 rounded-md bg-white">
+                    <div className="mb-6 flex flex-col gap-4 rounded-md  p-5 shadow">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#334155" }}>
+                                Quản lý cửa hàng
+                            </Typography>
                         </div>
-
-                        <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
-                            <button
-                                type="button"
-                                onClick={handleAddStore}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-stone-900 transition hover:bg-emerald-50"
-                            >
-                                <FiPlus />
-                                Thêm cơ sở
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleReset}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/30 px-5 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
-                            >
-                                <FiRotateCcw />
-                                Hoàn tác
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
-                            >
-                                <FiSave />
-                                {saving ? "Đang lưu..." : "Lưu thay đổi"}
-                            </button>
+                        <div>
+                            Trang About
+                        </div>
+                        <div>
+                            Trang giới thiệu
                         </div>
                     </div>
                 </section>
@@ -195,11 +179,42 @@ const AdminAbout = () => {
                         Đang tải danh sách cửa hàng...
                     </div>
                 ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-8 px-4 py-2 bg-white ">
+                        <div className="flex justify-end">
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={handleAddStore}
+                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 shadow-sm hover:bg-emerald-50"
+                                >
+                                    <FiPlus />
+                                    Thêm cơ sở
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleReset}
+                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 shadow-sm  hover:bg-emerald-50"
+                                >
+                                    <FiRotateCcw />
+                                    Hoàn tác
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 shadow-sm  hover:bg-emerald-50"
+                                >
+                                    <FiSave />
+                                    {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+                                </button>
+                            </div>
+                        </div>
                         {stores.map((store, index) => (
                             <section
                                 key={store.id}
-                                className="overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-stone-200"
+                                className="overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-stone-200"
                             >
                                 <div className="flex flex-col gap-5 border-b border-stone-200 bg-stone-50 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
                                     <div className="flex items-start gap-4">
@@ -213,14 +228,13 @@ const AdminAbout = () => {
                                             <h2 className="mt-2 text-2xl font-bold text-stone-900">
                                                 {store.branchName || `Cơ sở ${index + 1}`}
                                             </h2>
-
                                         </div>
                                     </div>
 
                                     <button
                                         type="button"
                                         onClick={() => handleDeleteStore(store.id)}
-                                        className="inline-flex items-center justify-center gap-2 self-start rounded-2xl border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 lg:self-center"
+                                        className="inline-flex items-center justify-center gap-2 self-start rounded-md border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 lg:self-center"
                                     >
                                         <FiTrash2 />
                                         Xóa cơ sở
@@ -304,8 +318,6 @@ const AdminAbout = () => {
                                             />
                                         </label>
                                     </div>
-
-
                                 </div>
                             </section>
                         ))}

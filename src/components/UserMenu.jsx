@@ -1,66 +1,119 @@
-import { Button, Menu, MenuItem } from "@mui/material";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 const UserMenu = () => {
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [open, setOpen] = React.useState(false);
+    const closeTimerRef = React.useRef(null);
     const { user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
-    const open = Boolean(anchorEl);
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
+
+    const clearCloseTimer = () => {
+        if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
     };
+
+    const handleOpen = () => {
+        clearCloseTimer();
+        setOpen(true);
+    };
+
     const handleClose = () => {
-        setAnchorEl(null);
+        clearCloseTimer();
+        setOpen(false);
+    };
+
+    const handleMouseLeave = () => {
+        clearCloseTimer();
+        closeTimerRef.current = setTimeout(() => {
+            setOpen(false);
+        }, 180);
     };
 
     const handleProfileClick = () => {
         handleClose();
-        navigate("/user/profile"); // <-- Điều hướng đến trang hồ sơ
-    };
-    const handleOrderClick = () => {
-        handleClose();
-        navigate("/user/order"); // <-- Điều hướng đến trang hồ sơ
+        navigate("/user/profile");
     };
 
-    // Khi nhấn Logout
+    const handleOrderClick = () => {
+        handleClose();
+        navigate("/user/order");
+    };
+
+    const handleSupportTicket = () => {
+        handleClose();
+        navigate("/ticket");
+    }
+
     const handleLogout = () => {
-        localStorage.removeItem("auth"); // hoặc tên token bạn lưu
+        handleClose();
+        localStorage.removeItem("auth");
         window.location.href = "/login";
     };
 
     return (
-        <div>
-            <Button
-                id="basic-button"
-                aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
+        <div
+            className="relative"
+            onMouseEnter={handleOpen}
+            onMouseLeave={handleMouseLeave}
+            onFocus={handleOpen}
+        >
+            <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => setOpen((prev) => !prev)}
+                className="rounded-md border border-[#d9a05b] bg-white px-3 py-1 text-sm font-semibold text-[#1a1a1a] shadow-sm transition-colors hover:bg-[#fff7ed]"
             >
-                <div className="text-sm font-semibold text-[#1a1a1a] border border-[#d9a05b] px-3 py-1 rounded-md bg-white shadow-sm">
-                    {user?.userName}
+                {user?.userName}
+            </button>
+
+            {open && (
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full z-[100] mt-2 w-44 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 text-sm text-neutral-700 shadow-lg"
+                    onMouseEnter={handleOpen}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleProfileClick}
+                        className="block w-full px-4 py-2 text-left hover:bg-orange-50 hover:text-[#8c4a0f]"
+                    >
+                        Hồ Sơ
+                    </button>
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleOrderClick}
+                        className="block w-full px-4 py-2 text-left hover:bg-orange-50 hover:text-[#8c4a0f]"
+                    >
+                        Đơn Hàng
+                    </button>
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleSupportTicket}
+                        className="block w-full px-4 py-2 text-left hover:bg-orange-50 hover:text-[#8c4a0f]"
+                    >
+                        Hỗ trợ
+                    </button>
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="block w-full px-4 py-2 text-left hover:bg-orange-50 hover:text-[#8c4a0f]"
+                    >
+                        Logout
+                    </button>
                 </div>
-
-
-            </Button>
-            <Menu
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                slotProps={{
-                    list: {
-                        'aria-labelledby': 'basic-button',
-                    },
-                }}
-            >
-                <MenuItem onClick={handleProfileClick}>Hồ Sơ</MenuItem>
-                <MenuItem onClick={handleOrderClick}>Đơn Hàng</MenuItem>
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
+            )}
         </div>
     );
-}
+};
 
 export default UserMenu;
+

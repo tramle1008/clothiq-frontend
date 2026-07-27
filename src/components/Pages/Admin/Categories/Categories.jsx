@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { IconButton } from "@mui/material";
 import { FaEdit } from "react-icons/fa";
@@ -7,7 +7,10 @@ import { MdDelete } from "react-icons/md";
 import { FiPlus, FiSearch } from "react-icons/fi";
 
 import { fetchCategories } from "../../../../store/actions";
-import { searchCategoriesApi } from "../../../../api/inventoryApi";
+import { deleteCategoryApi, searchCategoriesApi } from "../../../../api/inventoryApi";
+import AlertModel from "../../../AlerModel/AlertModel";
+import CategoriesCreateModal from "./CategoriesCreateModal";
+import CategoriesUpdateModal from "./CategoriesUpdateModal";
 import PaginationRounded from "../../../PaginationRounded";
 
 const PAGE_SIZE_OPTIONS = [10, 15, 20];
@@ -25,6 +28,10 @@ const Categories = () => {
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [deletingCategory, setDeletingCategory] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const keyword = searchParams.get("keyword") || "";
     const isSearchMode = Boolean(keyword.trim());
@@ -118,12 +125,48 @@ const Categories = () => {
         return categories || [];
     }, [categories, isSearchMode, searchResults]);
 
-    const handleDelete = () => {
-        console.log("Delete action triggered");
+    const refreshCategories = async () => {
+        if (isSearchMode) {
+            try {
+                setIsSearching(true);
+                const data = await searchCategoriesApi(keyword);
+                setSearchResults(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error("Loi khi tim kiem danh muc:", error);
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
+            return;
+        }
+
+        const pageIndex = page - 1;
+        dispatch(fetchCategories(`pageNumber=${pageIndex}&pageSize=${pageSize}`));
     };
 
-    const handleEdit = () => {
-        console.log("Edit action triggered");
+    const handleDelete = (category) => {
+        setDeletingCategory(category);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingCategory?.categoryId) {
+            return;
+        }
+
+        try {
+            setIsDeleting(true);
+            await deleteCategoryApi(deletingCategory.categoryId);
+            setDeletingCategory(null);
+            await refreshCategories();
+        } catch (error) {
+            console.error("Loi khi xoa danh muc:", error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleEdit = (category) => {
+        setEditingCategory(category);
     };
 
     const handleSearch = (keywordValue = searchTerm) => {
@@ -149,7 +192,7 @@ const Categories = () => {
     };
 
     const handleAddCategory = () => {
-        console.log("Add category action triggered");
+        setIsCreateModalOpen(true);
     };
 
     const handlePageSizeChange = (event) => {
@@ -199,7 +242,7 @@ const Categories = () => {
                             <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
                                 {suggestions.map((category) => (
                                     <button
-                                        key={category.categoryID}
+                                        key={category.categoryId}
                                         type="button"
                                         onClick={() => handleSuggestionClick(category)}
                                         className="block w-full border-b border-slate-100 px-4 py-3 text-left text-sm text-slate-700 transition last:border-b-0 hover:bg-slate-50"
@@ -227,24 +270,43 @@ const Categories = () => {
                             <tr>
                                 <th className="w-40 border border-gray-300 px-4 py-2">ID</th>
                                 <th className="border border-gray-300 px-4 py-2">Tên danh mục</th>
+                                <th className="w-40 border border-gray-300 px-4 py-2">SL sản phẩm</th>
                                 <th className="w-50 border border-gray-300 px-2 py-2">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             {displayedCategories.length > 0 ? (
                                 displayedCategories.map((category) => (
-                                    <tr key={category.categoryID}>
+                                    <tr key={category.categoryId}>
                                         <td className="border border-gray-300 px-4 py-2 text-center">
-                                            {category.categoryID}
+                                            {category.categoryId}
                                         </td>
                                         <td className="border border-gray-300 px-5 py-2">
-                                            {category.categoryName}
+                                            <Link
+                                                to={`/admin/products?categoryId=${category.categoryId}&page=1`}
+                                                className="font-medium text-slate-700 transition hover:text-blue-600"
+                                            >
+                                                {category.categoryName}
+                                            </Link>
+                                        </td>
+                                        <td className="border border-gray-300 px-4 py-2 text-center">
+                                            {category.productCount}
                                         </td>
                                         <td className="border border-gray-300 px-1 py-2 text-center">
-                                            <IconButton size="small" onClick={handleEdit} aria-label="edit" color="info">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleEdit(category)}
+                                                aria-label="edit"
+                                                color="info"
+                                            >
                                                 <FaEdit />
                                             </IconButton>
-                                            <IconButton size="small" onClick={handleDelete} aria-label="delete" color="error">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleDelete(category)}
+                                                aria-label="delete"
+                                                color="error"
+                                            >
                                                 <MdDelete />
                                             </IconButton>
                                         </td>
@@ -266,6 +328,35 @@ const Categories = () => {
                 </div>
 
             </div>
+
+            <AlertModel
+                open={Boolean(deletingCategory)}
+                title="Xóa danh mục"
+                message={`Bạn có chắc chắn muốn xóa danh mục "${deletingCategory?.categoryName || ""}" không? Khi xóa danh mục, tất cả sản phẩm thuộc danh mục này sẽ bị xóa theo.`}
+                confirmText="Xóa danh mục"
+                cancelText="Hủy"
+                tone="danger"
+                loading={isDeleting}
+                onClose={() => {
+                    if (!isDeleting) {
+                        setDeletingCategory(null);
+                    }
+                }}
+                onConfirm={handleConfirmDelete}
+            />
+
+            <CategoriesUpdateModal
+                isOpen={Boolean(editingCategory)}
+                category={editingCategory}
+                onClose={() => setEditingCategory(null)}
+                onSuccess={refreshCategories}
+            />
+
+            <CategoriesCreateModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={refreshCategories}
+            />
 
             {!isSearchMode && categoryPagination && (
                 <div className="relative mt-auto pt-6">

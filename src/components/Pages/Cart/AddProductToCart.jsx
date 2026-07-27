@@ -2,7 +2,11 @@ import { toast } from "react-hot-toast";
 import api from "../../../api/api";
 import { getAuthToken } from "../../../utils/auth";
 
+
+
+
 const AddProductToCart = async (productId, quantity = 1) => {
+
     try {
         const token = getAuthToken();
 

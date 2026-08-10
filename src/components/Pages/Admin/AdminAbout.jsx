@@ -158,18 +158,12 @@ const AdminAbout = () => {
     return (
         <main className="min-h-screen flex-1 bg-stone-100 px-4 pb-8 pt-24 md:px-8 lg:px-10">
             <div className="mx-auto max-w-[1500px]">
-                <section className="mb-8 rounded-md bg-white">
+                <section className="mb-8 rounded-md bg-amber-50">
                     <div className="mb-6 flex flex-col gap-4 rounded-md  p-5 shadow">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <Typography variant="h5" sx={{ fontWeight: 700, color: "#334155" }}>
                                 Quản lý cửa hàng
                             </Typography>
-                        </div>
-                        <div>
-                            Trang About
-                        </div>
-                        <div>
-                            Trang giới thiệu
                         </div>
                     </div>
                 </section>
@@ -179,8 +173,8 @@ const AdminAbout = () => {
                         Đang tải danh sách cửa hàng...
                     </div>
                 ) : (
-                    <div className="space-y-8 px-4 py-2 bg-white ">
-                        <div className="flex justify-end">
+                    <div className="space-y-8 px-4 py-2 bg-gray-400 rounded-md ">
+                        <div className="flex justify-end mb-2.5">
                             <div className="flex gap-3">
                                 <button
                                     type="button"
@@ -194,7 +188,7 @@ const AdminAbout = () => {
                                 <button
                                     type="button"
                                     onClick={handleReset}
-                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 shadow-sm  hover:bg-emerald-50"
+                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-stone-300 px-4 py-2 shadow-sm  hover:bg-emerald-50"
                                 >
                                     <FiRotateCcw />
                                     Hoàn tác
@@ -204,7 +198,7 @@ const AdminAbout = () => {
                                     type="button"
                                     onClick={handleSave}
                                     disabled={isSaving}
-                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 shadow-sm  hover:bg-emerald-50"
+                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-stone-700 px-4 py-2 shadow-sm  text-white hover:bg-emerald-900"
                                 >
                                     <FiSave />
                                     {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
@@ -214,7 +208,7 @@ const AdminAbout = () => {
                         {stores.map((store, index) => (
                             <section
                                 key={store.id}
-                                className="overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-stone-200"
+                                className="overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-stone-200 mb-4"
                             >
                                 <div className="flex flex-col gap-5 border-b border-stone-200 bg-stone-50 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
                                     <div className="flex items-start gap-4">

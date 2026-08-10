@@ -79,7 +79,7 @@ const PendingOrderDetailsDrawer = ({
                                 A. Thông tin đơn hàng
                             </Typography>
                             <div className="space-y-2 text-sm text-slate-700">
-                                <div><span className="font-semibold">Order ID:</span> {order.orderId}</div>
+                                <div><span className="font-semibold">Mã đơn:# </span>{order.orderId}</div>
                                 <div><span className="font-semibold">Ngày đặt:</span> {formatDate(order.dateOrder)}</div>
                                 <div className="flex items-center gap-2">
                                     <span className="font-semibold">Trạng thái:</span>
@@ -119,7 +119,7 @@ const PendingOrderDetailsDrawer = ({
                                                     {item.product?.productName || "--"}
                                                 </div>
                                                 <div className="mt-1 text-sm text-slate-600">
-                                                    SL: {item.quantity} | Don gia: {formatCurrency(item.orderProductPrice)}
+                                                    SL: {item.quantity} | Đơn giá : {formatCurrency(item.orderProductPrice)}
                                                 </div>
                                                 <div className="mt-1 text-sm text-slate-600">
                                                     Khuyến mãi: {Number(item.discount || 0)}%
@@ -161,7 +161,7 @@ const PendingOrderDetailsDrawer = ({
                                 disabled={submittingAction !== ""}
                                 onClick={() => onAction("ship")}
                             >
-                                {submittingAction === "ship" ? "Dang xu ly..." : "Xac nhan giao"}
+                                {submittingAction === "ship" ? "Đang sử lý..." : "Xác nhận giao"}
                             </Button>
                             <Button
                                 variant="outlined"
@@ -170,7 +170,7 @@ const PendingOrderDetailsDrawer = ({
                                 disabled={submittingAction !== ""}
                                 onClick={() => onAction("reject")}
                             >
-                                {submittingAction === "reject" ? "Dang xu ly..." : "Tu choi"}
+                                {submittingAction === "reject" ? "Đang sử lý..." : "Từ chối"}
                             </Button>
                         </div>
                     </div>

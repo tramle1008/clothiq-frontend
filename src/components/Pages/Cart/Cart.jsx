@@ -29,7 +29,7 @@ const Cart = () => {
         const token = getAuthToken();
 
         if (!token) {
-            setAuthMessage("Vui long dang nhap de xem gio hang.");
+            setAuthMessage("Vui lòng đăng nhập để xem giỏ hàng.");
             return;
         }
 
@@ -37,7 +37,7 @@ const Cart = () => {
         const isExpired = payload?.exp ? payload.exp * 1000 <= Date.now() : false;
 
         if (isExpired) {
-            setAuthMessage("Phien dang nhap da het han. Vui long dang nhap lai.");
+            setAuthMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
             return;
         }
 
@@ -50,7 +50,7 @@ const Cart = () => {
             <div>
                 <div className="mb-12 flex flex-col items-center">
                     <h1 className="flex items-center gap-1.5 text-4xl font-bold text-gray-500">
-                        Gio Hang
+                        Giỏ Hàng
                     </h1>
                 </div>
 

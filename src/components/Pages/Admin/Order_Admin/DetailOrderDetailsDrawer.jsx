@@ -1,4 +1,4 @@
-import { Chip, Divider, Drawer, IconButton, Typography } from "@mui/material";
+import { Button, Chip, Divider, Drawer, IconButton, Typography } from "@mui/material";
 import { FiX } from "react-icons/fi";
 
 const formatCurrency = (value) => {
@@ -78,7 +78,29 @@ const getPaymentChipColor = (status) => {
     }
 };
 
-const DetailOrderDetailsDrawer = ({ open, order, onClose }) => (
+const getDeliveryLabel = (status) => {
+    switch (status) {
+        case "PENDING":
+            return "Chờ xác nhận";
+        case "SHIPPED":
+            return "Chờ giao";
+        case "DELIVERED":
+            return "Đã giao";
+        case "REJECTED":
+            return "Đã hủy";
+        default:
+            return status || "--";
+    }
+};
+
+const DetailOrderDetailsDrawer = ({
+    open,
+    order,
+    onClose,
+    onMarkDelivered,
+    canMarkDelivered,
+    markingDelivered,
+}) => (
     <Drawer anchor="right" open={open} onClose={onClose}>
         <div className="flex h-full w-[50vw] min-w-[720px] max-w-[980px] flex-col bg-white">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
@@ -102,12 +124,12 @@ const DetailOrderDetailsDrawer = ({ open, order, onClose }) => (
                             A. Thông tin đơn hàng
                         </Typography>
                         <div className="space-y-2 text-sm text-slate-700">
-                            <div><span className="font-semibold">Order ID:</span> {order.orderId}</div>
+                            <div><span className="font-semibold">Mã đơn: #</span>{order.orderId}</div>
                             <div><span className="font-semibold">Ngày đặt:</span> {formatDate(order.dateOrder)}</div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-semibold">Trạng thái giao hàng:</span>
                                 <Chip
-                                    label={order.deliveryStatus || "--"}
+                                    label={getDeliveryLabel(order.deliveryStatus)}
                                     size="small"
                                     color={getDeliveryChipColor(order.deliveryStatus)}
                                     variant="outlined"
@@ -124,6 +146,19 @@ const DetailOrderDetailsDrawer = ({ open, order, onClose }) => (
                             </div>
                             <div><span className="font-semibold">Ghi chú khách hàng:</span> {order.note || "--"}</div>
                         </div>
+
+                        {canMarkDelivered && (
+                            <div className="mt-4 flex justify-end">
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    onClick={onMarkDelivered}
+                                    disabled={markingDelivered}
+                                >
+                                    {markingDelivered ? "Đang xử lý..." : "Đánh dấu đã giao"}
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="rounded-md border border-slate-200 p-4">

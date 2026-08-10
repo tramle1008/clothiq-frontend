@@ -113,11 +113,11 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
 
     return (
         <div className="flex justify-center text-center">
-            <Box>
+            <Box sx={{ width: "100%", maxWidth: 1100, px: 2 }}>
                 {!qrUrl && (
                     <>
-                        <Typography variant="h6" gutterBottom>Don Hang</Typography>
-                        <div className="grid grid-cols-4 bg-[#7f9c8f] p-1.5 mb-0.5">
+                        <Typography variant="h6" gutterBottom>Đơn hàng</Typography>
+                        <div className="grid grid-cols-[160px_minmax(0,1fr)_140px_120px] bg-[#7f9c8f] p-3 mb-1 rounded-t-md text-sm font-semibold text-white">
                             <p>Hình ảnh</p>
                             <p>Tên</p>
                             <p>Giá</p>
@@ -126,20 +126,20 @@ const Payment = ({ onNext, onBack, addressId, paymentMethod }) => {
                         <div className="grid grid-cols-1 gap-4">
                             {products.map((item) => (
                                 <div key={item.productId} className="grid grid-cols-1 gap-4">
-                                    <div className="grid grid-cols-4 items-center">
+                                    <div className="grid grid-cols-[160px_minmax(0,1fr)_140px_120px] items-center gap-4 rounded-b-md border border-slate-200 bg-white p-3 text-left">
                                         <img
                                             src={`${import.meta.env.VITE_BACK_END_URL}/images/${item.image}`}
                                             alt={item.productName}
-                                            className="w-28 h-28 object-cover rounded-md"
+                                            className="h-32 w-32 rounded-md object-cover"
                                         />
-                                        <div>
-                                            <h4 className="font-semibold">{item.productName}</h4>
+                                        <div className="min-w-0">
+                                            <h4 className="truncate text-base font-semibold">{item.productName}</h4>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">{getDiscountedUnitPrice(item).toLocaleString()}d</h4>
+                                            <h4 className="text-base font-semibold">{getDiscountedUnitPrice(item).toLocaleString()}d</h4>
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">{item.quantity?.toLocaleString()}</h4>
+                                            <h4 className="text-base font-semibold">{item.quantity?.toLocaleString()}</h4>
                                         </div>
                                     </div>
                                 </div>

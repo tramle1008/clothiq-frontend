@@ -161,7 +161,7 @@ const OrderView = () => {
                 <div className="grid grid-cols-3 gap-2 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
                     <div className="min-w-20 rounded-md bg-neutral-50 px-3 py-2 text-center">
                         <p className="text-lg font-bold text-neutral-900">{orderSummary.total}</p>
-                        <p className="text-xs text-neutral-500">Đơn</p>
+                        <p className="text-xs text-neutral-500">Tổng</p>
                     </div>
                     <div className="min-w-20 rounded-md bg-amber-50 px-3 py-2 text-center">
                         <p className="text-lg font-bold text-amber-700">{orderSummary.pending}</p>

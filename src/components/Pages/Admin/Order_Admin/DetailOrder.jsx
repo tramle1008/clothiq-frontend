@@ -86,6 +86,21 @@ const getStatusStyle = (status) => {
     }
 };
 
+const getStatusLabel = (status) => {
+    switch (status) {
+        case "PENDING":
+            return "Chờ xác nhận";
+        case "SHIPPED":
+            return "Chờ giao";
+        case "DELIVERED":
+            return "Đã giao";
+        case "REJECTED":
+            return "Đã hủy";
+        default:
+            return status || "--";
+    }
+};
+
 const getPaymentStyle = (status) => {
     switch (status) {
         case "PAID":
@@ -127,6 +142,8 @@ const SortHeader = ({ label, field, activeSortBy, activeSortOrder, onSort }) => 
     );
 };
 
+const isSelectableForDelivered = (status) => status === "SHIPPED";
+
 const DetailOrder = () => {
     const [orders, setOrders] = useState([]);
     const [totalPages, setTotalPages] = useState(0);
@@ -134,6 +151,9 @@ const DetailOrder = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+    const [batchMarkingDelivered, setBatchMarkingDelivered] = useState(false);
+    const [markingDeliveredOrderId, setMarkingDeliveredOrderId] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get("page")) || 1;
@@ -210,8 +230,11 @@ const DetailOrder = () => {
                 setOrders(res.data?.content || []);
                 setTotalPages(Number(res.data?.totalPages) || 0);
                 setTotalElements(Number(res.data?.totalElements) || 0);
+                setSelectedOrderIds((currentIds) =>
+                    currentIds.filter((id) => (res.data?.content || []).some((order) => order.orderId === id))
+                );
             } catch (err) {
-                setError("Khong the tai danh sach don hang.");
+                setError("Không thể tải danh sách đơn hàng.");
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -231,6 +254,35 @@ const DetailOrder = () => {
         fromDate,
         toDate,
     ]);
+
+    const refreshOrders = async () => {
+        const token = getAuthToken();
+        const params = {
+            pageNumber: page - 1,
+            pageSize,
+            sortBy,
+            sortOrder,
+        };
+
+        if (deliveryStatus) params.deliveryStatus = deliveryStatus;
+        if (paymentStatus) params.paymentStatus = paymentStatus;
+        if (paymentMethod) params.paymentMethod = paymentMethod;
+        if (keyword.trim()) params.keyword = keyword.trim();
+        if (fromDate) params.fromDate = fromDate;
+        if (toDate) params.toDate = toDate;
+
+        const res = await api.get("/admin/orders", {
+            params,
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setOrders(res.data?.content || []);
+        setTotalPages(Number(res.data?.totalPages) || 0);
+        setTotalElements(Number(res.data?.totalElements) || 0);
+        setSelectedOrderIds((currentIds) =>
+            currentIds.filter((id) => (res.data?.content || []).some((order) => order.orderId === id))
+        );
+    };
 
     const updateParams = (updater) => {
         const nextParams = new URLSearchParams(searchParams);
@@ -310,6 +362,118 @@ const DetailOrder = () => {
     const handleCloseDrawer = () => {
         setSelectedOrder(null);
     };
+
+    const handleToggleOrderSelection = (orderId) => {
+        setSelectedOrderIds((currentIds) =>
+            currentIds.includes(orderId)
+                ? currentIds.filter((id) => id !== orderId)
+                : [...currentIds, orderId]
+        );
+    };
+
+    const handleToggleSelectAll = () => {
+        const selectableIds = orders
+            .filter((order) => isSelectableForDelivered(order.deliveryStatus))
+            .map((order) => order.orderId);
+
+        const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedOrderIds.includes(id));
+
+        setSelectedOrderIds((currentIds) =>
+            allSelected
+                ? currentIds.filter((id) => !selectableIds.includes(id))
+                : Array.from(new Set([...currentIds, ...selectableIds]))
+        );
+    };
+
+    const handleMarkDeliveredSingle = async (orderId) => {
+        try {
+            setMarkingDeliveredOrderId(orderId);
+            const token = getAuthToken();
+            await api.put(`/admin/orders/${orderId}/deliver`, null, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            await refreshOrders();
+            setSelectedOrder(null);
+            setSelectedOrderIds((currentIds) => currentIds.filter((id) => id !== orderId));
+        } catch (err) {
+            console.error(err);
+            setError("Không thể cập nhật trạng thái giao hàng.");
+        } finally {
+            setMarkingDeliveredOrderId(null);
+        }
+    };
+
+    const handleBatchMarkDelivered = async () => {
+        const targetIds = selectedOrderIds.filter((id) =>
+            orders.some((order) => order.orderId === id && isSelectableForDelivered(order.deliveryStatus))
+        );
+
+        if (targetIds.length === 0) {
+            return;
+        }
+
+        try {
+            setBatchMarkingDelivered(true);
+            const token = getAuthToken();
+            await api.put("/admin/orders/deliver", targetIds, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            await refreshOrders();
+            setSelectedOrderIds([]);
+        } catch (err) {
+            console.error(err);
+            setError("Không thể cập nhật trạng thái giao hàng hàng loạt.");
+        } finally {
+            setBatchMarkingDelivered(false);
+        }
+    };
+
+    const handlePrintShippingSlip = async () => {
+        const targetIds = selectedOrderIds.filter((id) =>
+            orders.some((order) => order.orderId === id && isSelectableForDelivered(order.deliveryStatus))
+        );
+
+        if (targetIds.length === 0) {
+            return;
+        }
+
+        try {
+            const token = getAuthToken();
+            const searchParams = new URLSearchParams();
+            targetIds.forEach((id) => {
+                searchParams.append("orderIds", String(id));
+            });
+
+            const response = await api.get(`/orders/shipping-slip?${searchParams.toString()}`, {
+                responseType: "blob",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "danh-sach-don-hang-giao.pdf";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            setError("Không thể tạo phiếu giao hàng PDF.");
+        }
+    };
+
+    const selectedDeliverableCount = selectedOrderIds.filter((id) =>
+        orders.some((order) => order.orderId === id && isSelectableForDelivered(order.deliveryStatus))
+    ).length;
+
+    const selectableOrderIds = orders
+        .filter((order) => isSelectableForDelivered(order.deliveryStatus))
+        .map((order) => order.orderId);
+    const allSelectableSelected =
+        selectableOrderIds.length > 0 &&
+        selectableOrderIds.every((id) => selectedOrderIds.includes(id));
 
     if (loading) {
         return (
@@ -473,10 +637,43 @@ const DetailOrder = () => {
                 )}
 
                 <div className="overflow-hidden rounded-md bg-white shadow">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+                        <div className="text-sm text-slate-600">
+                            Đã chọn {selectedDeliverableCount} đơn có thể giao
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={handlePrintShippingSlip}
+                                disabled={selectedDeliverableCount === 0}
+                                className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                            >
+                                In phiếu giao hàng
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBatchMarkDelivered}
+                                disabled={selectedDeliverableCount === 0 || batchMarkingDelivered}
+                                className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                                {batchMarkingDelivered ? "Đang xử lý..." : "Đánh dấu đã giao"}
+                            </button>
+                        </div>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="min-w-full border-collapse">
                             <thead className="bg-slate-50">
                                 <tr className="text-left text-sm font-semibold text-slate-700">
+                                    <th className="px-4 py-3">
+                                        {selectableOrderIds.length > 0 ? (
+                                            <input
+                                                type="checkbox"
+                                                checked={allSelectableSelected}
+                                                onChange={handleToggleSelectAll}
+                                                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                            />
+                                        ) : null}
+                                    </th>
                                     <th className="px-4 py-3">
                                         <SortHeader
                                             label="Mã đơn"
@@ -539,6 +736,18 @@ const DetailOrder = () => {
                                 {orders.length > 0 ? (
                                     orders.map((order) => (
                                         <tr key={order.orderId} className="border-t border-slate-200 text-sm text-slate-700">
+                                            <td className="px-4 py-3">
+                                                {isSelectableForDelivered(order.deliveryStatus) ? (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedOrderIds.includes(order.orderId)}
+                                                        onChange={() => handleToggleOrderSelection(order.orderId)}
+                                                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                    />
+                                                ) : (
+                                                    <span className="text-slate-300">--</span>
+                                                )}
+                                            </td>
                                             <td className="px-4 py-3 font-semibold text-slate-900">
                                                 #{order.orderId}
                                             </td>
@@ -549,7 +758,7 @@ const DetailOrder = () => {
                                                 <span
                                                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(order.deliveryStatus)}`}
                                                 >
-                                                    {order.deliveryStatus || "--"}
+                                                    {getStatusLabel(order.deliveryStatus)}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
@@ -569,20 +778,22 @@ const DetailOrder = () => {
                                                 {formatDate(order.dateOrder)}
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleViewOrder(order)}
-                                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                                                >
-                                                    <FiEye size={14} />
-                                                    View
-                                                </button>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleViewOrder(order)}
+                                                        className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        <FiEye size={14} />
+                                                        View
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
+                                        <td colSpan="9" className="px-4 py-8 text-center text-slate-500">
                                             Không có đơn hàng nào.
                                         </td>
                                     </tr>
@@ -618,6 +829,9 @@ const DetailOrder = () => {
                 open={Boolean(selectedOrder)}
                 order={selectedOrder}
                 onClose={handleCloseDrawer}
+                onMarkDelivered={() => selectedOrder && handleMarkDeliveredSingle(selectedOrder.orderId)}
+                canMarkDelivered={selectedOrder && isSelectableForDelivered(selectedOrder.deliveryStatus)}
+                markingDelivered={markingDeliveredOrderId === selectedOrder?.orderId}
             />
         </div>
     );

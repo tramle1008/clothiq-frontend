@@ -94,14 +94,12 @@ const CategoriesCreateModal = ({ isOpen, onClose, onSuccess }) => {
                             <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
                                 <div>
                                     <div className="text-sm font-medium text-slate-800">Trạng thái</div>
-                                    <div className="text-xs text-slate-500">
-                                        Bật để danh mục hoạt động, tắt để ẩn khỏi danh sách.
-                                    </div>
+
                                 </div>
 
                                 <div className="flex items-center gap-3">
                                     <span className={`text-sm font-medium ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
-                                        {isActive ? "ACTIVE" : "INACTIVE"}
+                                        {isActive ? "Kích hoạt" : "Tạm ngưng"}
                                     </span>
                                     <Switch
                                         checked={isActive}

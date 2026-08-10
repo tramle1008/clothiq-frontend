@@ -61,7 +61,7 @@ const ShippingAddress = ({ onNext, setAddressId }) => {
                         onClick={() => setShowAddressModal(true)}
                         className="flex items-center rounded-md border border-b-blue-950 px-4 py-1 font-bold transition-colors duration-200 hover:bg-blue-100"
                     >
-                        + Them dia chi
+                        + Thêm địa chỉ
                     </button>
                 </div>
                 <Button
@@ -73,7 +73,7 @@ const ShippingAddress = ({ onNext, setAddressId }) => {
                             : "cursor-not-allowed bg-gray-300 text-gray-500"
                         }`}
                 >
-                    Tiep tuc
+                    Tiếp tục
                 </Button>
             </Box>
 

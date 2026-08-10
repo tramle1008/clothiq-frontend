@@ -41,6 +41,7 @@ function AppContent() {
     const routes = (
         <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/product" element={<Product />} />
             <Route path="/products" element={<Product />} />
             <Route path="/products/:productId" element={<ProductDetailPage />} />
             <Route path="/cart" element={<Cart />} />
@@ -102,5 +103,4 @@ function App() {
 }
 
 export default App;
-
 

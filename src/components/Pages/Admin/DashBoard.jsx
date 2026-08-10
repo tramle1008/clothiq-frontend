@@ -242,7 +242,13 @@ const Dashboard = () => {
                     <StatCard label="Sản phẩm" value={stats.totalProducts} />
                 </Link>
                 <Link to="/admin/orders">
-                    <StatCard label="Đơn chờ xác nhận" value={stats.pendingDeliveries} />
+                <StatCard
+                    label="Đơn chờ xác nhận"
+                    value={stats.pendingDeliveries}
+                    backgroundColor={Number(stats.pendingDeliveries) > 0 ? "#fffbeb" : "#f9f9f9"}
+                    valueColor={Number(stats.pendingDeliveries) > 0 ? "#b45309" : "#111827"}
+                    labelColor={Number(stats.pendingDeliveries) > 0 ? "#b45309" : "#555"}
+                />
                 </Link>
                 <StatCard label="Doanh thu tháng" value={formatCurrency(stats.revenueThisMonth)} />
             </div>
@@ -452,18 +458,18 @@ const Dashboard = () => {
     );
 };
 
-const StatCard = ({ label, value }) => (
+const StatCard = ({ label, value, valueColor = "#111827", labelColor = "#555", backgroundColor = "#f9f9f9" }) => (
     <div
         style={{
-            background: "#f9f9f9",
+            background: backgroundColor,
             padding: "20px",
             borderRadius: "12px",
             boxShadow: "0 0 10px rgba(0,0,0,0.05)",
             textAlign: "center",
         }}
     >
-        <h2 style={{ fontSize: "24px", marginBottom: "10px" }}>{value}</h2>
-        <p style={{ fontSize: "16px", color: "#555" }}>{label}</p>
+        <h2 style={{ fontSize: "24px", marginBottom: "10px", color: valueColor }}>{value}</h2>
+        <p style={{ fontSize: "16px", color: labelColor }}>{label}</p>
     </div>
 );
 

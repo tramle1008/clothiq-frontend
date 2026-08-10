@@ -191,7 +191,7 @@ const AddAdress = ({ open, onClose, onAdded }) => {
                         label="Ấp/Số nhà/Đường"
                         id="detail"
                         type="text"
-                        placeholder="Ap 6/A52, duong so 6"
+                        placeholder="Ấp 6/A52, đường số 6"
                         register={register}
                         errors={errors}
                         required

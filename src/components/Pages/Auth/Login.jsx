@@ -62,21 +62,7 @@ const Login = () => {
                         Đăng nhập để theo dõi đơn hàng, quản lý hồ sơ và tiếp tục mua sắm nhanh hơn.
                     </p>
 
-                    <div className="mt-8 space-y-4 rounded-2xl bg-white/15 p-5 backdrop-blur-sm">
-                        <div>
-                            <p className="text-sm font-semibold">Đăng nhập thường</p>
-                            <p className="mt-1 text-sm text-amber-50/85">
-                                Dùng tên đăng nhập và mật khẩu nếu bạn đã có tài khoản Clothiq.
-                            </p>
-                        </div>
-                        <div className="h-px bg-white/20" />
-                        <a href={googleLoginUrl} className="block rounded-xl transition hover:bg-white/10">
-                            <p className="text-sm font-semibold">Đăng nhập Google</p>
-                            <p className="mt-1 text-sm text-amber-50/85">
-                                Bạn có thể dùng Google để đăng nhập nhanh mà không cần nhập lại mật khẩu.
-                            </p>
-                        </a>
-                    </div>
+
                 </div>
 
                 <div className="bg-[#ead7c0] px-6 py-8 sm:px-8 lg:px-10">

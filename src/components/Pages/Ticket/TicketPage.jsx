@@ -49,7 +49,7 @@ const TicketPage = () => {
         <div className="p-6">
             <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-semibold text-slate-800">Hỗ trợ khách hàng</h1>
+                    <h1 className="text-2xl font-semibold text-slate-800">Lịch sử yêu cầu</h1>
                 </div>
 
                 <button

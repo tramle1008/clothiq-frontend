@@ -1,3 +1,3 @@
 # React + Vite
-
-npm run dev
+Admin Account: system
+Password     : 12345678

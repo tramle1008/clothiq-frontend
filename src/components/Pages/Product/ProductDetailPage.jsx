@@ -36,7 +36,7 @@ const ProductDetailPage = () => {
                 setProduct(data);
             } catch (requestError) {
                 console.error(requestError);
-                setError("Khong the tai thong tin san pham.");
+                setError("Không thể tải thông tin sản phẩm.");
             } finally {
                 setLoading(false);
             }
@@ -168,7 +168,7 @@ const ProductDetailPage = () => {
     if (error || !product) {
         return (
             <div className="mx-auto flex min-h-[420px] max-w-3xl flex-col items-center justify-center px-4 text-center">
-                <p className="text-lg font-semibold text-slate-800">{error || "Khong tim thay san pham."}</p>
+                <p className="text-lg font-semibold text-slate-800">{error || "Không thể tải thông tin sản phẩm."}</p>
                 <Link
                     to="/products"
                     className="mt-4 rounded-lg bg-gray-800 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"

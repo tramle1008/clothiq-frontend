@@ -121,7 +121,14 @@ const navGroups = [
 
 
             },
-            { label: 'Cơ sở', icon: FiMapPin, to: '/admin/about' },
+            {
+                label: 'Cơ sở', icon: FiMapPin,
+                children: [
+                    { label: 'Địa chỉ', to: '/admin/about' },
+                    { label: 'Ảnh bìa', to: '/admin/branch' }
+                ]
+
+            },
         ],
     },
 ];

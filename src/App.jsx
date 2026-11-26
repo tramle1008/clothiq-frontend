@@ -24,7 +24,7 @@ import DeliverRoute from "./components/Pages/Delivery/DeliverRoute";
 import Delivery from "./components/Pages/Delivery/Delivery";
 import WebFooter from "./components/Pages/WebFooter";
 import About from "./components/Pages/About/About";
-import AdminAbout from "./components/Pages/Admin/AdminAbout";
+
 
 import DashBoard from "./components/Pages/Admin/DashBoard";
 import Discount from "./components/Pages/Admin/Discounts/Discount";
@@ -34,6 +34,8 @@ import TicketCreate from "./components/Pages/Ticket/TicketCreate";
 import TicketDetail from "./components/Pages/Ticket/TicketDetail";
 import AdminTicket from "./components/Pages/Admin/Ticket/AdminTicket";
 import AdminTicketDetail from "./components/Pages/Admin/Ticket/AdminTicketDetail";
+import AdminAbout from "./components/Pages/Admin/Branch/AdminAbout";
+import BranchAdmin from "./components/Pages/Admin/Branch/BranchAdmin";
 
 function AppContent() {
     const location = useLocation();
@@ -67,6 +69,7 @@ function AppContent() {
                 <Route path="products/categories" element={<Categories />} />
                 <Route path="products/discounts" element={<Discount />} />
                 <Route path="tickets" element={<AdminTicket />} />
+                <Route path="branch" element={<BranchAdmin />} />
                 <Route path="tickets/detail/:ticketId" element={<AdminTicketDetail />} />
             </Route>
             <Route path="/deliver" element={<DeliverRoute><Delivery /></DeliverRoute>} />

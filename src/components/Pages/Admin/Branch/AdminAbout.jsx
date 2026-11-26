@@ -8,7 +8,7 @@ import {
     fetchStoreBranches,
     replaceStoreBranches,
     updateStoreBranch,
-} from "../../../store/actions";
+} from "../../../../store/actions";
 import { Typography } from "@mui/material";
 
 const createEmptyStore = (index) => ({
